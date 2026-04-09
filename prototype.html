@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>扣环 COUPLER — 紧固件行业数字化平台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a3a5c',accent:'#0ea5e9',surface:'#f1f5f9'}}}}</script>
+<style>
+*{font-family:'PingFang SC','Microsoft YaHei',Arial,sans-serif}
+.page{display:none}.page.active{display:block}
+.nav-item{cursor:pointer;transition:all .15s}
+.nav-item:hover{background:#e0f2fe}
+.nav-item.active{background:#0ea5e9;color:#fff;border-radius:8px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #e2e8f0}
+th{background:#f8fafc;font-weight:600;color:#475569;font-size:13px}
+.input{border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;width:100%;font-size:14px;outline:none;transition:border-color .15s}
+.input:focus{border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+.btn{padding:8px 18px;border-radius:8px;font-weight:500;font-size:14px;cursor:pointer;transition:all .15s;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#0ea5e9;color:#fff}.btn-primary:hover{background:#0284c7}
+.btn-outline{border:1px solid #cbd5e1;background:#fff;color:#475569}.btn-outline:hover{background:#f8fafc}
+.btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px}
+.badge{font-size:11px;padding:1px 6px;border-radius:10px}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sub-section{font-size:14px;font-weight:600;color:#64748b;margin:20px 0 12px;border-bottom:1px solid #e2e8f0;padding-bottom:6px}
+#sidebar{width:220px;min-height:100vh;background:#fff;border-right:1px solid #e2e8f0;flex-shrink:0}
+#main{flex:1;overflow:auto}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:slideUp .2s ease-out}
+@media(max-width:768px){#sidebar{position:fixed;left:-240px;z-index:50;transition:left .2s;height:100vh}#sidebar.open{left:0}#main{margin-left:0!important}}
+</style>
+</head>
+<body class="bg-surface flex" style="min-height:100vh">
+
+<!-- ===== SIDEBAR ===== -->
+<aside id="sidebar" class="flex flex-col py-4">
+  <div class="px-5 mb-5">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
+      </div>
+      <div>
+        <div class="font-bold text-primary text-sm leading-tight">扣环</div>
+        <div class="text-xs text-gray-400">COUPLER</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-4 mb-4">
+    <div class="flex gap-1 bg-gray-100 rounded-lg p-1">
+      <div class="flex-1 text-center py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all" id="tab-buyer" onclick="switchRole('buyer')">采购商</div>
+      <div class="flex-1 text-center py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all" id="tab-supplier" onclick="switchRole('supplier')">供应商</div>
+    </div>
+  </div>
+
+  <div id="nav-buyer" class="px-3 flex-1">
+    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">交易流程</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" data-page="products" onclick="showPage('products')">产品列表</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" data-page="product-detail" onclick="showPage('product-detail')">产品详情</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('create-rfq')">发起询价</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('my-rfq')">我的询价</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('received-quotes')">收到的报价</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('my-orders')">我的订单</div>
+    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2 mt-4">协作</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('messages')">消息通知</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('rating')">评价</div>
+  </div>
+
+  <div id="nav-supplier" class="px-3 flex-1" style="display:none">
+    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">入驻管理</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('supplier-onboard')">供应商入驻</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('product-manage')">产品管理</div>
+    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2 mt-4">交易流程</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('inbox-rfq')">收到的询价</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('create-quote')">发起报价</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('my-quotes')">我的报价</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('my-orders-supplier')">我的订单</div>
+    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2 mt-4">协作</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('messages')">消息通知</div>
+    <div class="nav-item px-3 py-2 text-sm text-gray-700 rounded-lg mb-0.5" onclick="showPage('rating')">评价</div>
+  </div>
+
+  <div class="px-4 pt-4 border-t border-gray-100 mt-auto">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">张</div>
+      <div>
+        <div class="text-sm font-medium text-gray-800" id="user-name">张工</div>
+        <div class="text-xs text-gray-400" id="user-company">德信机械</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div id="main" class="flex flex-col min-h-screen">
+  <header class="h-[60px] border-b border-gray-200 bg-white flex items-center px-5 gap-3 flex-shrink-0">
+    <button class="md:hidden p-2 rounded hover:bg-gray-100" onclick="document.getElementById('sidebar').classList.toggle('open')">
+      <svg width="20" height="20" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex-1">
+      <span class="text-xs text-gray-400" id="breadcrumb-top">演示模式 · 扣环 COUPLER</span>
+    </div>
+    <button class="relative p-2 rounded hover:bg-gray-100" onclick="switchRole('buyer');showPage('messages')">
+      <svg width="18" height="18" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+    </button>
+  </header>
+
+  <!-- PAGE: Products -->
+  <div class="page active" id="page-products">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 mb-1">产品列表</h2>
+          <p class="text-sm text-gray-500">共 <strong class="text-primary">48</strong> 个标准紧固件</p>
+        </div>
+        <div class="flex gap-2">
+          <select class="input w-36"><option>全部分类</option><option>六角螺栓</option><option>内六角螺栓</option><option>螺母</option></select>
+          <select class="input w-28"><option>全部标准</option><option>GB/T</option><option>ISO</option><option>DIN</option></select>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex gap-3">
+        <div class="flex-1 relative">
+          <input class="input pr-10" placeholder="搜索型号、标准号或规格关键词…" oninput="filterProducts(this.value)">
+          <svg class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <button class="btn btn-primary" onclick="showPage('create-rfq')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          发起询价 <span class="bg-white/20 text-xs px-1.5 rounded" id="cart-badge">0</span>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="product-grid"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: Product Detail -->
+  <div class="page" id="page-product-detail">
+    <div class="p-6">
+      <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+        <span class="cursor-pointer hover:text-accent" onclick="showPage('products')">产品列表</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="text-gray-800" id="detail-bread">六角头螺栓 M10×40</span>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-xl border border-gray-200 p-6 mb-4">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h2 class="text-xl font-bold text-gray-900" id="detail-title">GB/T 5782.1 六角头螺栓</h2>
+                <p class="text-sm text-gray-500 mt-1" id="detail-sub">M10 × 40 · 8.8级 · 镀锌</p>
+              </div>
+              <span class="tag bg-green-100 text-green-700">标准件</span>
+            </div>
+            <!-- Drawing -->
+            <div class="bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center mb-6" style="height:200px">
+              <div class="text-center text-gray-400">
+                <svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" class="mx-auto mb-2 opacity-40">
+                  <rect x="3" y="9" width="18" height="5" rx="1"/><rect x="6" y="5" width="12" height="4" rx="1"/>
+                  <path d="M8 14v7M16 14v7M10 16h4"/>
+                </svg>
+                <p class="text-sm">二维工程图示意</p>
+                <p class="text-xs mt-1 opacity-60">d=10mm · L=40mm · k=6.4mm</p>
+              </div>
+            </div>
+            <h3 class="sub-section">规格参数</h3>
+            <table id="detail-params-table"></table>
+          </div>
+        </div>
+        <div>
+          <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+            <h3 class="sub-section">可售供应商</h3>
+            <div id="detail-supplier-list"></div>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="sub-section">交易参考</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-gray-500">千支重量</span><span class="font-medium">≈ 6.25 kg</span></div>
+              <div class="flex justify-between"><span class="text-gray-500">参考单价</span><span class="font-medium text-accent" id="detail-price">¥0.85/件</span></div>
+              <div class="flex justify-between"><span class="text-gray-500">最小起订</span><span class="font-medium" id="detail-moq">100 件</span></div>
+            </div>
+            <button class="btn btn-primary w-full mt-4 justify-center" onclick="addToCart(currentDetail);showToast('已加入询价清单')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              加入询价清单
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: Create RFQ -->
+  <div class="page" id="page-create-rfq">
+    <div class="p-6 max-w-3xl">
+      <h2 class="text-xl font-bold text-gray-900 mb-1">发起询价</h2>
+      <p class="text-sm text-gray-500 mb-6">填写询价信息，供应商将在 24 小时内报价</p>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">询价清单</h3>
+        <div id="rfq-items-list"></div>
+        <button class="text-sm text-accent hover:underline mt-3" onclick="showPage('products')">+ 继续添加产品</button>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">交货要求</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-xs text-gray-500 mb-1 block">期望交货日期</label><input type="date" class="input" id="rfq-date"></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">交货地点</label><input class="input" placeholder="如：深圳市宝安区" id="rfq-loc"></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">紧急程度</label><select class="input" id="rfq-urgency"><option>普通（7天内）</option><option>加急（3天内）</option><option>紧急（次日）</option></select></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">预算范围（选填）</label><input class="input" placeholder="如：¥5,000 - ¥8,000" id="rfq-budget"></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="sub-section">备注说明</h3>
+        <textarea class="input" rows="3" placeholder="补充质量要求、认证需求、包装要求等…" id="rfq-note"></textarea>
+        <div class="flex items-center justify-between mt-4">
+          <div class="text-sm text-gray-500">已选 <strong id="rfq-count">0</strong> 个产品，合计 <strong id="rfq-total">0</strong> 件</div>
+          <button class="btn btn-primary" onclick="submitRFQ()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            发送询价
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: My RFQ (Buyer) -->
+  <div class="page" id="page-my-rfq">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 mb-1">我的询价</h2>
+          <p class="text-sm text-gray-500">管理您发出的所有询价单</p>
+        </div>
+        <button class="btn btn-primary" onclick="showPage('create-rfq')">+ 新建询价</button>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <div class="flex gap-2 mb-4">
+          <button class="px-3 py-1.5 text-xs rounded-full bg-primary text-white font-medium">全部</button>
+          <button class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600">待报价</button>
+          <button class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600">已报价</button>
+          <button class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600">已下单</button>
+        </div>
+        <table>
+          <thead><tr><th>询价单号</th><th>产品数</th><th>总数量</th><th>期望交期</th><th>状态</th><th>报价数</th><th>操作</th></tr></thead>
+          <tbody id="rfq-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: Received Quotes -->
+  <div class="page" id="page-received-quotes">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 mb-1">收到的报价</h2>
+          <p class="text-sm text-gray-500">对比各供应商的报价，选择最优方案</p>
+        </div>
+      </div>
+      <div id="quotes-container"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: My Orders (Buyer) -->
+  <div class="page" id="page-my-orders">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">我的订单</h2>
+        <select class="input w-36"><option>全部状态</option><option>已确认</option><option>生产中</option><option>已发货</option></select>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <table>
+          <thead><tr><th>订单号</th><th>供应商</th><th>产品</th><th>数量</th><th>金额</th><th>状态</th><th>更新时间</th></tr></thead>
+          <tbody id="orders-table-buyer"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: Supplier Onboard -->
+  <div class="page" id="page-supplier-onboard">
+    <div class="p-6 max-w-2xl">
+      <h2 class="text-xl font-bold text-gray-900 mb-1">供应商入驻</h2>
+      <p class="text-sm text-gray-500 mb-6">完善企业信息，加速审核通过</p>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">企业基本信息</h3>
+        <div class="space-y-4">
+          <div><label class="text-xs text-gray-500 mb-1 block">企业名称 <span class="text-red-500">*</span></label><input class="input" value="深圳华固精密科技有限公司"></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-xs text-gray-500 mb-1 block">统一社会信用代码</label><input class="input" placeholder="18位代码"></div>
+            <div><label class="text-xs text-gray-500 mb-1 block">成立年份</label><input class="input" placeholder="如：2015"></div>
+          </div>
+          <div><label class="text-xs text-gray-500 mb-1 block">主营产品类别</label>
+            <div class="flex flex-wrap gap-3 mt-1">
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox" checked> 六角螺栓</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox" checked> 内六角螺栓</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox"> 螺母</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox"> 垫圈</label>
+            </div>
+          </div>
+          <div><label class="text-xs text-gray-500 mb-1 block">支持的标准体系</label>
+            <div class="flex gap-4 mt-1">
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox" checked> GB/T</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox" checked> ISO</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox" checked> DIN</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox"> ANSI</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">产能与认证</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-xs text-gray-500 mb-1 block">月产能</label><input class="input" value="500万件"></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">最低起订量</label><input class="input" value="1,000件"></div>
+          <div class="col-span-2"><label class="text-xs text-gray-500 mb-1 block">资质认证</label>
+            <div class="flex flex-wrap gap-3 mt-1">
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox" checked> ISO9001</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox"> IATF16949</label>
+              <label class="flex items-center gap-1 text-sm"><input type="checkbox"> ISO14001</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="sub-section">联系方式</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-xs text-gray-500 mb-1 block">联系人</label><input class="input" value="李经理"></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">联系电话</label><input class="input" value="138-8888-6666"></div>
+          <div class="col-span-2"><label class="text-xs text-gray-500 mb-1 block">企业地址</label><input class="input" value="广东省深圳市宝安区福永街道"></div>
+        </div>
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">信息提交后，平台将在 1-2 个工作日内完成审核</div>
+        <div class="flex justify-end gap-3 mt-4">
+          <button class="btn btn-outline" onclick="showPage('product-manage')">稍后完善</button>
+          <button class="btn btn-primary" onclick="submitOnboard()">提交入驻申请</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: Product Manage -->
+  <div class="page" id="page-product-manage">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 mb-1">产品管理</h2>
+          <p class="text-sm text-gray-500">管理您的在线产品目录</p>
+        </div>
+        <button class="btn btn-primary" onclick="showToast('发布功能 — 演示中')">+ 发布产品</button>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <table>
+          <thead><tr><th>产品名称</th><th>标准</th><th>规格</th><th>参考价</th><th>库存</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead>
+          <tbody id="manage-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: Inbox RFQ (Supplier) -->
+  <div class="page" id="page-inbox-rfq">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 mb-1">收到的询价</h2>
+          <p class="text-sm text-gray-500">来自采购商的询价请求，及时报价提升成交率</p>
+        </div>
+        <div class="flex items-center gap-2 text-sm"><span class="w-2 h-2 bg-red-500 rounded-full"></span><span id="inbox-count">2</span> 条新询价</div>
+      </div>
+      <div id="inbox-list"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: Create Quote -->
+  <div class="page" id="page-create-quote">
+    <div class="p-6 max-w-2xl">
+      <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+        <span class="cursor-pointer hover:text-accent" onclick="showPage('inbox-rfq')">收到的询价</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="text-gray-800">填写报价</span>
+      </div>
+      <h2 class="text-xl font-bold text-gray-900 mb-1">发起报价</h2>
+      <p class="text-sm text-gray-500 mb-6" id="quote-rfq-label">为询价单 RFQ-20260408-001 填写报价</p>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">询价产品明细</h3>
+        <div id="quote-items"></div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">报价明细</h3>
+        <div id="quote-price-items"></div>
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <div class="flex justify-between text-sm mb-2"><span class="text-gray-500">产品合计</span><span id="q-subtotal">¥0.00</span></div>
+          <div class="flex justify-between text-sm mb-2"><span class="text-gray-500">运费</span><input class="input w-36 text-right" placeholder="¥0.00" id="q-freight" value="50" oninput="calcQuoteTotal()"></div>
+          <div class="flex justify-between font-bold text-base pt-2 border-t border-gray-200"><span>报价总计</span><span class="text-accent" id="q-total">¥0.00</span></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">商务条款</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-xs text-gray-500 mb-1 block">交货周期（天）</label><input class="input" value="7" id="q-leadtime"></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">报价有效期至</label><input type="date" class="input" id="q-valid"></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">付款方式</label><select class="input" id="q-payment"><option>款到发货</option><option>货到付款</option><option>月结30天</option></select></div>
+          <div><label class="text-xs text-gray-500 mb-1 block">发票</label><select class="input" id="q-tax"><option>含税（增值税专用发票）</option><option>不含税</option></select></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="sub-section">备注</h3>
+        <textarea class="input" rows="3" placeholder="补充产品说明、质量承诺、交货条件等…" id="q-remark"></textarea>
+        <div class="flex items-center justify-between mt-4">
+          <div class="text-sm text-gray-400">报价单将发送给采购商，请确保信息准确</div>
+          <button class="btn btn-success" onclick="submitQuote()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            提交报价
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: My Quotes (Supplier) -->
+  <div class="page" id="page-my-quotes">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">我的报价</h2>
+        <div class="text-sm text-gray-500"><span class="tag bg-amber-100 text-amber-700" id="sup-quote-pending">0</span> 待确认</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <table>
+          <thead><tr><th>报价单号</th><th>询价单号</th><th>采购商</th><th>报价金额</th><th>状态</th><th>有效期至</th></tr></thead>
+          <tbody id="sup-quotes-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: My Orders (Supplier) -->
+  <div class="page" id="page-my-orders-supplier">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">我的订单</h2>
+        <div class="flex gap-2 items-center text-sm">
+          <span class="text-gray-500">累计订单额</span>
+          <strong class="text-primary text-lg" id="sup-revenue">¥5,200.00</strong>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <table>
+          <thead><tr><th>订单号</th><th>采购商</th><th>产品</th><th>数量</th><th>金额</th><th>交期</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="orders-table-sup"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: Messages -->
+  <div class="page" id="page-messages">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-1">消息通知</h2>
+      <p class="text-sm text-gray-500 mb-6">系统消息、询价提醒、订单状态变更</p>
+      <div id="messages-list"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: Rating -->
+  <div class="page" id="page-rating">
+    <div class="p-6 max-w-xl">
+      <h2 class="text-xl font-bold text-gray-900 mb-1">供应商评价</h2>
+      <p class="text-sm text-gray-500 mb-6">已完成交易的订单可进行评价</p>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+        <h3 class="sub-section">待评价订单</h3>
+        <div id="rating-pending"></div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="sub-section">我的评分历史</h3>
+        <div class="text-center py-10 text-gray-400">
+          <svg class="mx-auto mb-2" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <p class="text-sm">暂无历史评价</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end main -->
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.15);transform:translateY(20px);opacity:0;transition:all .3s;z-index:100;pointer-events:none"></div>
+
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const PRODUCTS = [
+  {id:'P001',name:'GB/T 5782.1 六角头螺栓',standard:'GB/T 5782.1-2016',thread:'M10',length:40,grade:'8.8',material:'碳钢',surface:'镀锌',price:0.85,moq:100,suppliers:[{name:'深圳华固精密科技',stock:'充足'}]},
+  {id:'P002',name:'ISO 4017 六角头螺栓',standard:'ISO 4017',thread:'M12',length:50,grade:'10.9',material:'合金钢',surface:'发黑',price:1.45,moq:50,suppliers:[{name:'浙江力恒标准件',stock:'有货'}]},
+  {id:'P003',name:'DIN 933 全螺纹六角螺栓',standard:'DIN 933',thread:'M16',length:80,grade:'8.8',material:'碳钢',surface:'磷化',price:2.30,moq:200,suppliers:[{name:'江苏固安捷紧固件',stock:'有货'},{name:'深圳华固精密科技',stock:'充足'}]},
+  {id:'P004',name:'GB/T 70.1 内六角圆柱头螺钉',standard:'GB/T 70.1-2000',thread:'M8',length:30,grade:'12.9',material:'合金钢',surface:'发黑',price:1.20,moq:100,suppliers:[{name:'浙江力恒标准件',stock:'充足'}]},
+  {id:'P005',name:'GB/T 6170 1型六角螺母',standard:'GB/T 6170-2015',thread:'M10',grade:'8',material:'碳钢',surface:'镀锌',price:0.18,moq:500,suppliers:[{name:'江苏固安捷紧固件',stock:'充足'}]},
+  {id:'P006',name:'ISO 4762 内六角圆柱头螺钉',standard:'ISO 4762',thread:'M14',length:60,grade:'10.9',material:'合金钢',surface:'本色',price:3.80,moq:50,suppliers:[{name:'深圳华固精密科技',stock:'少量'}]},
+];
+
+// STATE
+let cart = [];
+let currentDetail = null;
+let selectedQuoteForOrder = null;
+let quoteTargetRfqId = null;
+let quoteTargetRfqItems = [];
+let currentQuoteItems = [];
+
+const RFQS = [
+  {id:'RFQ-20260407-001',items:[{pid:'P001',qty:500,unitPrice:0.85},{pid:'P002',qty:200,unitPrice:1.45}],totalQty:700,delivery:'2026-04-20',status:'quoted',quotes:2,buyer:'德信机械',created:'2026-04-07'},
+  {id:'RFQ-20260406-002',items:[{pid:'P003',qty:1000,unitPrice:2.30}],totalQty:1000,delivery:'2026-04-25',status:'ordered',quotes:1,buyer:'德信机械',created:'2026-04-06'},
+];
+
+const QUOTES = [
+  {id:'Q-001',rfqId:'RFQ-20260407-001',supplierId:'S001',supplier:'深圳华固精密科技',contact:'李经理',tel:'138-8888-6666',items:[{pid:'P001',qty:500,unitPrice:0.82,sub:410},{pid:'P002',qty:200,unitPrice:1.40,sub:280}],subtotal:690,freight:50,total:740,status:'pending',leadtime:7,payment:'款到发货',validUntil:'2026-04-15'},
+  {id:'Q-002',rfqId:'RFQ-20260407-001',supplierId:'S002',supplier:'浙江力恒标准件',contact:'王工',tel:'137-2222-8888',items:[{pid:'P001',qty:500,unitPrice:0.80,sub:400},{pid:'P002',qty:200,unitPrice:1.35,sub:270}],subtotal:670,freight:30,total:700,status:'pending',leadtime:10,payment:'月结30天',validUntil:'2026-04-16'},
+];
+
+const ORDERS_BUYER = [
+  {id:'ORD-20260406-001',supplier:'江苏固安捷紧固件',product:'DIN 933 M16×80 8.8级磷化',qty:1000,amount:2350,status:'生产中',updated:'2026-04-06'},
+];
+
+const ORDERS_SUP = [
+  {id:'ORD-20260406-001',buyer:'德信机械',product:'DIN 933 M16×80',qty:1000,amount:2350,delivery:'2026-04-25',status:'生产中'},
+  {id:'ORD-20260405-002',buyer:'德信机械',product:'GB/T 6170 M10 螺母',qty:2000,amount:5200,delivery:'2026-04-15',status:'已发货'},
+];
+
+const MESSAGES = [
+  {icon:'📨',title:'新询价到达',body:'德信机械 发起了新询价 RFQ-20260407-001，包含2个产品，请及时处理',time:'10分钟前',unread:true},
+  {icon:'💰',title:'2家供应商已报价',body:'您收到的询价 RFQ-20260407-001 已有2家供应商报价，请尽快查看对比',time:'2小时前',unread:true},
+  {icon:'📦',title:'订单已确认生产',body:'订单 ORD-20260406-001 供应商已确认生产，预计4月25日交付',time:'1天前',unread:false},
+];
+
+const MESSAGES_SUP = [
+  {icon:'📨',title:'新询价到达',body:'德信机械 发起了新询价 RFQ-20260407-001，包含2个产品，请及时处理',time:'10分钟前',unread:true},
+  {icon:'📋',title:'订单已确认',body:'采购商 德信机械 已确认您的报价，订单 ORD-20260406-001 已生成',time:'1天前',unread:false},
+];
+
+// ================================================================
+// HELPERS
+// ================================================================
+function getProduct(id){return PRODUCTS.find(p=>p.id===id)}
+function statusBadge(s){
+  const m={'待报价':['bg-amber-100','text-amber-700'],'已报价':['bg-blue-100','text-blue-700'],'quoted':['bg-blue-100','text-blue-700'],'ordered':['bg-green-100','text-green-700'],'已下单':['bg-green-100','text-green-700'],'pending':['bg-amber-100','text-amber-700'],'已接受':['bg-green-100','text-green-700'],'已拒绝':['bg-red-100','text-red-700'],'已确认':['bg-blue-100','text-blue-700'],'生产中':['bg-blue-100','text-blue-700'],'已发货':['bg-purple-100','text-purple-700'],'已完成':['bg-gray-100','text-gray-500']};
+  const [a,b]=m[s]||['bg-gray-100','text-gray-600'];
+  return `<span class="tag ${a} ${b}">${s}</span>`;
+}
+function fmt(n){return '¥'+Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2})}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';t.style.transform='translateY(0)';
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(20px)'},2200);
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+let activeRole='buyer';
+function switchRole(r){
+  activeRole=r;
+  document.getElementById('tab-buyer').style.background=r==='buyer'?'#0ea5e9':'transparent';
+  document.getElementById('tab-buyer').style.color=r==='buyer'?'#fff':'#374151';
+  document.getElementById('tab-supplier').style.background=r==='supplier'?'#0ea5e9':'transparent';
+  document.getElementById('tab-supplier').style.color=r==='supplier'?'#fff':'#374151';
+  document.getElementById('nav-buyer').style.display=r==='buyer'?'block':'none';
+  document.getElementById('nav-supplier').style.display=r==='supplier'?'block':'none';
+  document.getElementById('user-name').textContent=r==='buyer'?'张工':'李经理';
+  document.getElementById('user-company').textContent=r==='buyer'?'德信机械':'深圳华固精密科技';
+  document.getElementById('user-company').previousElementSibling.textContent=r==='buyer'?'张':'李';
+  showPage('products');
+}
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+name);
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll(`[data-page="${name}"]`).forEach(n=>n.classList.add('active'));
+  window.scrollTo(0,0);
+
+  // Render page content
+  if(name==='products')renderProducts();
+  if(name==='product-detail')renderDetail();
+  if(name==='create-rfq')renderRFQForm();
+  if(name==='my-rfq')renderRFQTable();
+  if(name==='received-quotes')renderQuotes();
+  if(name==='my-orders')renderBuyerOrders();
+  if(name==='product-manage')renderManage();
+  if(name==='inbox-rfq')renderInbox();
+  if(name==='create-quote')renderQuoteForm();
+  if(name==='my-quotes')renderSupQuotes();
+  if(name==='my-orders-supplier')renderSupOrders();
+  if(name==='messages')renderMessages();
+  if(name==='rating')renderRating();
+}
+
+// ================================================================
+// RENDER FUNCTIONS
+// ================================================================
+function renderProducts(){
+  const g=document.getElementById('product-grid');
+  g.innerHTML=PRODUCTS.map(p=>`
+    <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-accent/50 hover:shadow-sm transition-all">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="font-semibold text-gray-900 text-sm">${p.name}</div>
+          <div class="text-xs text-gray-400 mt-0.5">${p.standard} · ${p.thread}${p.length?'×'+p.length:''}</div>
+        </div>
+        <span class="tag bg-green-50 text-green-700 text-xs">标准件</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-xs mb-4">
+        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-400">等级</div><div class="font-medium text-gray-800">${p.grade}${p.grade.length<3?'级':''}</div></div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-400">材质</div><div class="font-medium text-gray-800">${p.material}</div></div>
+        <div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-400">表面</div><div class="font-medium text-gray-800">${p.surface}</div></div>
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <div><span class="text-accent font-bold text-lg">${fmt(p.price)}</span><span class="text-xs text-gray-400">/件</span></div>
+        <div class="text-xs text-gray-400">MOQ ${p.moq}件</div>
+      </div>
+      <div class="text-xs text-gray-500 mb-3">可售供应商：${p.suppliers.length}家</div>
+      <div class="flex gap-2">
+        <button class="btn btn-primary flex-1 justify-center text-xs py-2" onclick="openDetail('${p.id}')">查看详情</button>
+        <button class="btn btn-outline flex-1 justify-center text-xs py-2" onclick="addToCart(getProduct('${p.id}'))">加入询价</button>
+      </div>
+    </div>`).join('');
+}
+
+function filterProducts(q){
+  const filtered=q?PRODUCTS.filter(p=>p.name.includes(q)||p.standard.includes(q)||p.thread.includes(q)):PRODUCTS;
+  const g=document.getElementById('product-grid');
+  g.innerHTML=filtered.map(p=>`<div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-accent/50 transition-all">
+      <div class="flex items-start justify-between mb-3"><div><div class="font-semibold text-gray-900 text-sm">${p.name}</div><div class="text-xs text-gray-400 mt-0.5">${p.standard} · ${p.thread}${p.length?'×'+p.length:''}</div></div><span class="tag bg-green-50 text-green-700 text-xs">标准件</span></div>
+      <div class="grid grid-cols-3 gap-2 text-xs mb-4"><div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-400">等级</div><div class="font-medium">${p.grade}</div></div><div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-400">材质</div><div class="font-medium">${p.material}</div></div><div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-400">表面</div><div class="font-medium">${p.surface}</div></div></div>
+      <div class="flex items-center justify-between mb-3"><div><span class="text-accent font-bold text-lg">${fmt(p.price)}</span></div><div class="text-xs text-gray-400">MOQ ${p.moq}件</div></div>
+      <div class="flex gap-2"><button class="btn btn-primary flex-1 justify-center text-xs py-2" onclick="openDetail('${p.id}')">查看详情</button><button class="btn btn-outline flex-1 justify-center text-xs py-2" onclick="addToCart(getProduct('${p.id}'))">加入询价</button></div>
+    </div>`).join('');
+  if(!filtered.length)g.innerHTML='<div class="col-span-3 text-center py-12 text-gray-400">未找到匹配产品</div>';
+}
+
+function openDetail(id){
+  currentDetail=getProduct(id);
+  showPage('product-detail');
+}
+
+function renderDetail(){
+  if(!currentDetail)return;
+  const p=currentDetail;
+  document.getElementById('detail-title').textContent=p.name;
+  document.getElementById('detail-sub').textContent=`${p.thread}${p.length?' × '+p.length+'mm':''} · ${p.grade}级 · ${p.surface}`;
+  document.getElementById('detail-bread').textContent=`${p.thread}${p.length?'×'+p.length:''}`;
+  document.getElementById('detail-price').textContent=fmt(p.price)+'/件';
+  document.getElementById('detail-moq').textContent=p.moq+' 件';
+
+  const pt=document.getElementById('detail-params-table');
+  let rows=`<tr><td class="text-gray-500 w-36">标准号</td><td class="font-medium">${p.standard}</td></tr>
+    <tr><td class="text-gray-500">螺纹规格</td><td class="font-medium">${p.thread}</td></tr>`;
+  if(p.length)rows+=`<tr><td class="text-gray-500">公称长度</td><td class="font-medium">${p.length} mm</td></tr>`;
+  rows+=`<tr><td class="text-gray-500">性能等级</td><td class="font-medium">${p.grade}级</td></tr>
+    <tr><td class="text-gray-500">材质</td><td class="font-medium">${p.material}</td></tr>
+    <tr><td class="text-gray-500">表面处理</td><td class="font-medium">${p.surface}</td></tr>
+    <tr><td class="text-gray-500">螺纹公差</td><td class="font-medium">6g</td></tr>
+    <tr><td class="text-gray-500">头型</td><td class="font-medium">标准六角头</td></tr>`;
+  if(p.length)rows+=`<tr><td class="text-gray-500">抗拉强度</td><td class="font-medium">800 MPa</td></tr><tr><td class="text-gray-500">屈服强度</td><td class="font-medium">640 MPa</td></tr>`;
+  pt.innerHTML=rows;
+
+  document.getElementById('detail-supplier-list').innerHTML=p.suppliers.map(s=>`
+    <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+      <div><div class="text-sm font-medium text-gray-800">${s.name}</div><div class="text-xs text-gray-400">${s.stock}</div></div>
+      <button class="btn btn-outline text-xs py-1 px-3" onclick="addToCart(getProduct('${p.id}'))">询价</button>
+    </div>`).join('');
+}
+
+function addToCart(p){
+  if(!p)return;
+  if(!cart.find(c=>c.id===p.id))cart.push({...p,qty:p.moq||100});
+  document.getElementById('cart-badge').textContent=cart.length;
+  showToast(`已添加：${p.name}`);
+}
+
+function renderRFQForm(){
+  const el=document.getElementById('rfq-items-list');
+  if(!cart.length){
+    el.innerHTML='<div class="text-center py-8 text-gray-400 text-sm">暂无产品，请先从产品列表中添加</div>';
+  } else {
+    el.innerHTML=`<table><thead><tr><th>产品</th><th>规格</th><th>单价</th><th>数量</th><th></th></tr></thead><tbody>
+      ${cart.map((c,i)=>`<tr>
+        <td class="text-sm">${c.name}</td>
+        <td class="text-sm text-gray-500">${c.thread}${c.length?'×'+c.length:''}</td>
+        <td class="text-sm">${fmt(c.price)}</td>
+        <td><input type="number" value="${c.qty}" min="${c.moq||1}" class="input w-24 text-sm" onchange="cart[${i}].qty=parseInt(this.value);renderRFQForm()"></td>
+        <td><button class="text-red-400 hover:text-red-600 text-xs" onclick="cart.splice(${i},1);renderRFQForm();document.getElementById('cart-badge').textContent=cart.length">移除</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+  document.getElementById('rfq-count').textContent=cart.length;
+  document.getElementById('rfq-total').textContent=cart.reduce((a,c)=>a+(c.qty||0),0);
+  document.getElementById('rfq-date').value='2026-04-25';
+}
+
+function submitRFQ(){
+  if(!cart.length){showToast('请先添加产品');return;}
+  const id='RFQ-'+new Date().getTime().toString().slice(-8);
+  RFQS.unshift({id,items:cart.map(c=>({pid:c.id,qty:c.qty,unitPrice:c.price})),totalQty:cart.reduce((a,c)=>a+(c.qty||0),0),delivery:document.getElementById('rfq-date').value||'2026-04-25',status:'pending',quotes:0,buyer:'德信机械',created:new Date().toISOString().slice(0,10)});
+  cart=[];
+  document.getElementById('cart-badge').textContent='0';
+  showToast('询价已发送！供应商将在24小时内报价');
+  showPage('my-rfq');
+}
+
+function renderRFQTable(){
+  document.getElementById('rfq-table').innerHTML=RFQS.map(r=>`
+    <tr>
+      <td class="text-sm font-mono">${r.id}</td>
+      <td class="text-sm">${r.items.length}个</td>
+      <td class="text-sm">${r.totalQty.toLocaleString()}</td>
+      <td class="text-sm">${r.delivery}</td>
+      <td>${statusBadge(r.status==='quoted'?'已报价':r.status==='ordered'?'已下单':'待报价')}</td>
+      <td class="text-sm">${r.quotes}家</td>
+      <td><button class="text-accent hover:underline text-sm" onclick="showPage('received-quotes')">查看报价</button></td>
+    </tr>`).join('');
+}
+
+function renderQuotes(){
+  document.getElementById('quotes-container').innerHTML=RFQS.filter(r=>r.quotes>0).map(rfq=>`
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-3">
+        <h3 class="font-semibold text-gray-800">${rfq.id}</h3>
+        <span class="text-xs text-gray-400">${rfq.items.length}个产品 · ${rfq.totalQty}件</span>
+        <span class="text-xs text-gray-400">期望交期：${rfq.delivery}</span>
+      </div>
+      ${QUOTES.filter(q=>q.rfqId===rfq.id).map(q=>`
+        <div class="quote-card animate-in">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="font-semibold text-gray-800">${q.supplier}</div>
+              <div class="text-xs text-gray-400 mt-0.5">${q.contact} · ${q.tel}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xl font-bold text-accent">${fmt(q.total)}</div>
+              <div class="text-xs text-gray-400">含运费${fmt(q.freight)}</div>
+            </div>
+          </div>
+          <table class="text-sm mb-3">
+            <thead><tr><th>产品</th><th>数量</th><th>单价</th><th>小计</th></tr></thead>
+            <tbody>${q.items.map(i=>`<tr><td>${getProduct(i.pid)?.name||i.pid}</td><td>${i.qty}</td><td>${fmt(i.unitPrice)}</td><td>${fmt(i.sub)}</td></tr>`).join('')}</tbody>
+          </table>
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+            <span>交期 ${q.leadtime}天 · ${q.payment} · 有效期至 ${q.validUntil}</span>
+          </div>
+          <button class="btn btn-success w-full justify-center" onclick="acceptQuote('${q.id}','${rfq.id}')">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            选择此报价并生成订单
+          </button>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function acceptQuote(qid,rfqId){
+  const q=QUOTES.find(x=>x.id===qid);
+  const rfq=RFQS.find(x=>x.id===rfqId);
+  if(!q||!rfq)return;
+  ORDERS_BUYER.unshift({id:'ORD-'+new Date().getTime().toString().slice(-8),supplier:q.supplier,product:getProduct(rfq.items[0].pid)?.name||'',qty:rfq.totalQty,amount:q.total,status:'已确认',updated:new Date().toISOString().slice(0,10)});
+  q.status='已接受';
+  rfq.status='ordered';
+  MESSAGES.unshift({icon:'🎉',title:'报价已接受',body:`您已接受 ${q.supplier} 的报价，订单已生成`,time:'刚刚',unread:true});
+  showToast('订单已生成！');
+  showPage('my-orders');
+}
+
+function renderBuyerOrders(){
+  document.getElementById('orders-table-buyer').innerHTML=ORDERS_BUYER.map(o=>`
+    <tr>
+      <td class="text-sm font-mono">${o.id}</td>
+      <td class="text-sm">${o.supplier}</td>
+      <td class="text-sm">${o.product}</td>
+      <td class="text-sm">${o.qty.toLocaleString()}</td>
+      <td class="text-sm font-medium text-accent">${fmt(o.amount)}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td class="text-sm text-gray-400">${o.updated}</td>
+    </tr>`).join('');
+}
+
+function renderManage(){
+  document.getElementById('manage-table').innerHTML=PRODUCTS.slice(0,4).map(p=>`
+    <tr>
+      <td class="text-sm">${p.name}</td>
+      <td class="text-sm text-gray-500">${p.standard}</td>
+      <td class="text-sm">${p.thread}${p.length?'×'+p.length:''} ${p.grade}级</td>
+      <td class="text-sm">${fmt(p.price)}</td>
+      <td class="text-sm">${p.suppliers[0]?.stock||'—'}</td>
+      <td><span class="tag bg-green-100 text-green-700">上架中</span></td>
+      <td class="text-sm text-gray-400">2026-04-05</td>
+      <td><button class="text-accent hover:underline text-xs" onclick="showToast('编辑功能 — 演示中')">编辑</button></td>
+    </tr>`).join('');
+}
+
+function renderInbox(){
+  document.getElementById('inbox-list').innerHTML=RFQS.filter(r=>r.quotes===0||r.quotes>0).slice(0,2).map(rfq=>`
+    <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4 animate-in">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">德</div>
+          <div>
+            <div class="font-semibold text-gray-800">德信机械</div>
+            <div class="text-xs text-gray-400">张工 · 138-8888-8888</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-mono text-gray-600">${rfq.id}</div>
+          <div class="text-xs text-gray-400">${rfq.created}</div>
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 mb-3">
+        ${rfq.items.map(i=>`<div class="flex justify-between text-sm py-1"><span>${getProduct(i.pid)?.name||i.pid}</span><span class="text-gray-500">× ${i.qty}件</span></div>`).join('')}
+      </div>
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+        <span>期望交期：${rfq.delivery} · 普通询价</span>
+        <span>${rfq.totalQty.toLocaleString()} 件</span>
+      </div>
+      <button class="btn btn-success w-full justify-center" onclick="startQuote('${rfq.id}')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        填写报价
+      </button>
+    </div>`).join('');
+}
+
+function startQuote(rfqId){
+  quoteTargetRfqId=rfqId;
+  const rfq=RFQS.find(r=>r.id===rfqId);
+  if(!rfq)return;
+  quoteTargetRfqItems=rfq.items.map(i=>{const p=getProduct(i.pid);return{...i,pname:p?.name||i.pid,unitPrice:p?.price||0}});
+  currentQuoteItems=quoteTargetRfqItems.map(i=>({...i,myPrice:i.unitPrice}));
+  document.getElementById('quote-rfq-label').textContent=`为询价单 ${rfqId} 填写报价`;
+  renderQuoteForm();
+  showPage('create-quote');
+}
+
+function renderQuoteForm(){
+  document.getElementById('quote-items').innerHTML=`<table class="text-sm"><thead><tr><th>产品</th><th>询价数量</th><th>参考单价</th></tr></thead><tbody>
+    ${quoteTargetRfqItems.map(i=>`<tr><td>${i.pname}</td><td>${i.qty}件</td><td class="text-gray-500">${fmt(i.unitPrice)}</td></tr>`).join('')}
+  </tbody></table>`;
+
+  document.getElementById('quote-price-items').innerHTML=quoteTargetRfqItems.map((i,idx)=>`
+    <div class="flex items-center gap-3 mb-3 text-sm">
+      <div class="flex-1">${i.pname}</div>
+      <div class="text-gray-400">${i.qty}件</div>
+      <div class="flex items-center gap-1">
+        <span class="text-gray-400">¥</span>
+        <input type="number" step="0.01" value="${i.myPrice}" class="input w-24 text-sm text-right" onchange="currentQuoteItems[${idx}].myPrice=parseFloat(this.value)||0;calcQuoteTotal()">
+      </div>
+      <div class="w-20 text-right font-medium text-accent" id="qline-${idx}">${fmt((parseFloat(i.myPrice)||0)*i.qty)}</div>
+    </div>`).join('');
+
+  calcQuoteTotal();
+  document.getElementById('q-valid').value='2026-04-15';
+}
+
+function calcQuoteTotal(){
+  let sub=0;
+  quoteTargetRfqItems.forEach((i,idx)=>{
+    const price=parseFloat(document.querySelectorAll('#quote-price-items input')[idx]?.value)||0;
+    const el=document.getElementById('qline-'+idx);
+    if(el)el.textContent=fmt(price*i.qty);
+    sub+=price*i.qty;
+  });
+  const freight=parseFloat(document.getElementById('q-freight')?.value)||0;
+  document.getElementById('q-subtotal').textContent=fmt(sub);
+  document.getElementById('q-total').textContent=fmt(sub+freight);
+}
+
+function submitQuote(){
+  let sub=0;
+  document.querySelectorAll('#quote-price-items input').forEach((inp,idx)=>{
+    const price=parseFloat(inp.value)||0;
+    sub+=price*(quoteTargetRfqItems[idx]?.qty||0);
+    if(currentQuoteItems[idx])currentQuoteItems[idx].myPrice=price;
+  });
+  const freight=parseFloat(document.getElementById('q-freight')?.value)||0;
+  const leadtime=document.getElementById('q-leadtime')?.value||'7';
+  const valid=document.getElementById('q-valid')?.value||'';
+  const payment=document.getElementById('q-payment')?.value||'';
+
+  const newQuote={
+    id:'Q-'+new Date().getTime().toString().slice(-6),
+    rfqId:quoteTargetRfqId,
+    supplierId:'S001',
+    supplier:'深圳华固精密科技',
+    contact:'李经理',
+    tel:'138-8888-6666',
+    items:currentQuoteItems.map((c,i)=>({pid:quoteTargetRfqItems[i].pid,qty:quoteTargetRfqItems[i].qty,unitPrice:c.myPrice,sub:c.myPrice*quoteTargetRfqItems[i].qty})),
+    subtotal:sub,
+    freight,
+    total:sub+freight,
+    status:'pending',
+    leadtime,
+    payment,
+    validUntil:valid
+  };
+  QUOTES.push(newQuote);
+
+  const rfq=RFQS.find(r=>r.id===quoteTargetRfqId);
+  if(rfq){rfq.quotes=(rfq.quotes||0)+1;rfq.status='quoted';}
+
+  MESSAGES_SUP.unshift({icon:'💰',title:'报价已提交',body:`您已提交报价 ${newQuote.id}，采购商正在审核中`,time:'刚刚',unread:true});
+  showToast('报价已提交！');
+  showPage('my-quotes');
+}
+
+function renderSupQuotes(){
+  document.getElementById('sup-quote-pending').textContent=QUOTES.filter(q=>q.status==='pending').length;
+  document.getElementById('sup-quotes-table').innerHTML=QUOTES.map(q=>`
+    <tr>
+      <td class="text-sm font-mono">${q.id}</td>
+      <td class="text-sm">${q.rfqId}</td>
+      <td class="text-sm">${q.supplier}</td>
+      <td class="text-sm font-medium text-accent">${fmt(q.total)}</td>
+      <td>${statusBadge(q.status==='pending'?'待确认':q.status)}</td>
+      <td class="text-sm text-gray-400">${q.validUntil}</td>
+    </tr>`).join('');
+}
+
+function renderSupOrders(){
+  document.getElementById('sup-revenue').textContent=fmt(ORDERS_SUP.reduce((a,o)=>a+o.amount,0));
+  document.getElementById('orders-table-sup').innerHTML=ORDERS_SUP.map(o=>`
+    <tr>
+      <td class="text-sm font-mono">${o.id}</td>
+      <td class="text-sm">${o.buyer}</td>
+      <td class="text-sm">${o.product}</td>
+      <td class="text-sm">${o.qty.toLocaleString()}</td>
+      <td class="text-sm font-medium text-accent">${fmt(o.amount)}</td>
+      <td class="text-sm">${o.delivery}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td>
+        <select class="input w-24 text-xs" onchange="updateOrderStatus('${o.id}',this.value)">
+          <option value="已确认" ${o.status==='已确认'?'selected':''}>已确认</option>
+          <option value="生产中" ${o.status==='生产中'?'selected':''}>生产中</option>
+          <option value="已发货" ${o.status==='已发货'?'selected':''}>已发货</option>
+          <option value="已完成" ${o.status==='已完成'?'selected':''}>已完成</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function updateOrderStatus(oid,status){
+  const o=ORDERS_SUP.find(x=>x.id===oid);
+  if(o){o.status=status;showToast(`订单 ${oid} 已更新为「${status}」`);}
+}
+
+function renderMessages(){
+  const msgs=activeRole==='buyer'?MESSAGES:MESSAGES_SUP;
+  document.getElementById('messages-list').innerHTML=msgs.map(m=>`
+    <div class="bg-white rounded-xl border ${m.unread?'border-accent/40':'border-gray-200'} p-4 mb-3 flex items-start gap-3 animate-in hover:shadow-sm transition-shadow">
+      <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-lg flex-shrink-0">${m.icon}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="font-medium text-sm text-gray-800">${m.title}</div>
+          ${m.unread?'<span class="w-2 h-2 bg-accent rounded-full flex-shrink-0"></span>':''}
+        </div>
+        <div class="text-sm text-gray-500">${m.body}</div>
+        <div class="text-xs text-gray-400 mt-1">${m.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderRating(){
+  const pendingOrders=ORDERS_BUYER.filter(o=>o.status==='已完成'||o.status==='生产中');
+  document.getElementById('rating-pending').innerHTML=pendingOrders.length?pendingOrders.map(o=>`
+    <div class="border border-gray-100 rounded-lg p-4 mb-3">
+      <div class="flex items-center justify-between mb-2">
+        <div><div class="text-sm font-medium">${o.supplier}</div><div class="text-xs text-gray-400">${o.product} × ${o.qty}件</div></div>
+        <div class="font-bold text-accent">${fmt(o.amount)}</div>
+      </div>
+      <div class="flex items-center gap-4 mb-2">
+        <span class="text-xs text-gray-500">交期准确</span>
+        <div class="flex gap-0.5">${[1,2,3,4,5].map(s=>`<svg class="w-4 h-4 cursor-pointer" fill="none" stroke="#f59e0b" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('')}</div>
+      </div>
+      <div class="flex items-center gap-4 mb-2">
+        <span class="text-xs text-gray-500">产品质量</span>
+        <div class="flex gap-0.5">${[1,2,3,4,5].map(s=>`<svg class="w-4 h-4 cursor-pointer" fill="none" stroke="#f59e0b" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('')}</div>
+      </div>
+      <div class="flex items-center gap-4 mb-3">
+        <span class="text-xs text-gray-500">服务态度</span>
+        <div class="flex gap-0.5">${[1,2,3,4,5].map(s=>`<svg class="w-4 h-4 cursor-pointer" fill="none" stroke="#f59e0b" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('')}</div>
+      </div>
+      <button class="btn btn-primary w-full justify-center text-xs" onclick="submitRating('${o.id}')">提交评价</button>
+    </div>`).join(''):'<div class="text-center py-6 text-gray-400 text-sm">暂无待评价订单</div>';
+}
+
+function submitRating(id){showToast('评价已提交，感谢您的反馈！');renderRating();}
+
+function submitOnboard(){
+  showToast('入驻申请已提交！审核通过后将短信通知您');
+}
+
+// ================================================================
+// INIT
+// ================================================================
+switchRole('buyer');
+</script>
+</body>
+</html>

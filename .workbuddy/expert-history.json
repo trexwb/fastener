@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "sessions": {
+    "a111dfc2a7f0455683413d7c2bf6efb9": [
+      {
+        "expertId": "DiscoveryCoach",
+        "name": "Piper",
+        "profession": "需求发现教练",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/05-Sales/DiscoveryCoach/DiscoveryCoach.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/05-Sales/DiscoveryCoach/DiscoveryCoach_zh.md",
+        "usedAt": 1775540369475,
+        "industryId": "05-Sales"
+      },
+      {
+        "expertId": "TechnicalDocumentationEngineer",
+        "name": "Anna",
+        "profession": "技术文档工程师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/TechnicalDocumentationEngineer/TechnicalDocumentationEngineer.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/TechnicalDocumentationEngineer/TechnicalDocumentationEngineer_zh.md",
+        "usedAt": 1775539922602,
+        "industryId": "02-Engineering"
+      },
+      {
+        "expertId": "RapidPrototypingEngineer",
+        "name": "Uma",
+        "profession": "快速原型工程师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer_zh.md",
+        "usedAt": 1775539572070,
+        "industryId": "02-Engineering"
+      }
+    ],
+    "c3a02af5d6154fab9bffa5d231a9a867": [
+      {
+        "expertId": "RapidPrototypingEngineer",
+        "name": "Uma",
+        "profession": "快速原型工程师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer_zh.md",
+        "usedAt": 1775628505579,
+        "industryId": "all"
+      }
+    ]
+  },
+  "lastUpdated": 1775638787453
+}
