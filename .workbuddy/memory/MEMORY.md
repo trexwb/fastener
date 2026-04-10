@@ -43,10 +43,58 @@
 - 技术栈：Vue3+Fastify+Prisma+MySQL8+Redis+Meilisearch
 - 文档：`docs/05_new-system-requirements-architecture.md`
 
-### 用户偏好
+### 螺定 SUREDIM 项目（新）
+
+**产品定位**：Electron 离线桌面工具，螺栓标准查询 + 千支重计算，面向个人工程师/贸易商
+
+**MVP 范围**：
+- 客户端：标准查询 + 千支重计算器
+- 管理后台：数据增删改查 + 序列号管理 + 付费用户记录
+- 落地页：下载页 + 版本说明 + 升级日志
+
+**三原型文件**（已全部完成）：
+- `stdic-client.html` — 桌面客户端，含授权栏/搜索/筛选/详情/计算器/对比/解锁弹窗
+- `stdic-admin.html` — 管理后台，含登录/仪表盘/标准CRUD/产品CRUD/序列号生成/用户管理
+- `stdic-landing.html` — 落地页，含 Hero/Features/Coverage/Pricing/Changelog
+
+**技术选型**：Electron + sql.js (WASM SQLite) + 离线序列号激活
+
+**商业模型**：
+- 免费：GB 50 + ISO 30 + DIN 20 = 100 条
+- 专业版 ¥199/年（不限数据 + 对比分析）
+- 企业版 ¥2,999/年（10席位 + API）
+
+**设计语言**：精密工程美学（#2563eb 主色 + JetBrains Mono + Inter 字体），三个原型统一
+
+**设计规范**：`docs/06_coupler-ui-design-spec.md`（已更新附录C）
+
+### 新增文件（2026-04-10 下午）
+
+**docs/07_visual-correction-report.md** — 视觉修正案（三原型所有修正项清单）
+**docs/08_core-css-system.md** — 核心 CSS 系统（Design Token + 组件规格代码块）
+**docs/09_interaction-specification.md** — 交互说明书（状态机 + 响应规范）
+
+### UI 优化完成状态（2026-04-10）
+- ✅ 设计 Token 注入（三端完整）
+- ✅ 小程序交互完善（20项 P0）
+- ✅ 后台交互完善（15项 P0）
+- ✅ 桌面端交互完善（10项 P1）
+- ✅ 批量选择 JS 逻辑（stdic-admin.html）
+- ✅ 离线指示器 JS 逻辑（stdic-client.html）
+- ✅ 扫码状态机 JS（stdic-miniapp.html，已有）
+- ✅ 专家解读面板接入详情页（stdic-client.html — 4种类型卡片动态渲染）
 - 需要具体的代码路径和字段级分析，不接受宽泛建议
 - 优先利用现有代码资产，而不是推倒重来
 - 输出三阶段路线图：工具化 → 知识化 → 服务化
+
+### 产品定位（2026-04-10 重大更新）
+- **起点定位**：「紧固件从业者的标准知识库——数据经专业校正，每条标准附专家解读」
+- **终极愿景**：「紧固件行业从选型到交付的全链路数字化工作台」
+- **核心差异化**：数据壁垒（专业纠正，部分已申请国标/企标）+ 专家解读 + 供应链匹配 + 多产品组合
+- **战略路径**：产品驱动，服务层后置；专家时间用于内容生产，不做高频服务交付
+- **种子用户策略**：邀请贸易公司老客户10-20人内测
+- **MVP边界**：标准数据库（GB/ISO/DIN，每条附专家解读）+ 全文搜索 + 收藏夹；禁止碰交易/PFMEA/供应商管理
+- **调研报告**：`docs/plans/2026-04-10-product-research-summary.md`
 
 ### 新增文件（2026-04-08）
 - `CODEBUDDY.md` — AI助手指南，包含架构概览、技术栈、MVP范围、业务流程

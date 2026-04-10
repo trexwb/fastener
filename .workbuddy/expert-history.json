@@ -8,7 +8,7 @@
         "profession": "需求发现教练",
         "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/05-Sales/DiscoveryCoach/DiscoveryCoach.png",
         "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/05-Sales/DiscoveryCoach/DiscoveryCoach_zh.md",
-        "usedAt": 1775540369475,
+        "usedAt": 1775783582490,
         "industryId": "05-Sales"
       },
       {
@@ -37,10 +37,30 @@
         "profession": "快速原型工程师",
         "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer.png",
         "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer_zh.md",
-        "usedAt": 1775628505579,
+        "usedAt": 1775784595516,
         "industryId": "all"
+      }
+    ],
+    "c0a4e09dfb94447d8051c4888ae80fb3": [
+      {
+        "expertId": "UiDesigner",
+        "name": "Sam",
+        "profession": "UI设计师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/01-Design/UiDesigner/UiDesigner.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/01-Design/UiDesigner/UiDesigner_zh.md",
+        "usedAt": 1775792850563,
+        "industryId": "01-Design"
+      },
+      {
+        "expertId": "UserExperienceArchitect",
+        "name": "Tom",
+        "profession": "用户体验架构师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/01-Design/UserExperienceArchitect/UserExperienceArchitect.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/01-Design/UserExperienceArchitect/UserExperienceArchitect_zh.md",
+        "usedAt": 1775727236103,
+        "industryId": "01-Design"
       }
     ]
   },
-  "lastUpdated": 1775638787453
+  "lastUpdated": 1775816602681
 }

@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>螺定 SUREDIM — 离线标准查询工具</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   螺定 SUREDIM — 桌面客户端设计系统 v2.0
+   ============================================ */
+
+/* === 1. DESIGN TOKENS === */
+:root{
+  /* Brand Colors */
+  --blue:#2563eb;--blue-light:#EFF6FF;--blue-dark:#1D4ED8;--blue-glow:rgba(37,99,235,.12);
+  --green:#10B981;--green-light:#ECFDF5;
+  --orange:#F59E0B;--orange-light:#FEF3C7;
+  --red:#DC2626;--red-light:#FEE2E2;
+
+  /* Grays */
+  --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+  --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#374151;
+  --gray-800:#1f2937;--gray-900:#0f172a;
+
+  /* Sidebar */
+  --sidebar-bg:#1c2333;--sidebar-hover:#263044;--sidebar-active:#2d3a52;
+
+  /* Shadows */
+  --shadow-xs:0 1px 2px rgba(0,0,0,.06);--shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1);--shadow-lg:0 8px 24px rgba(0,0,0,.12);
+  --shadow-card:0 20px 60px rgba(0,0,0,.18);
+
+  /* Radii */
+  --r-xs:4px;--r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:14px;
+
+  /* Transitions */
+  --t-fast:120ms ease;--t-base:200ms ease;--t-slow:300ms ease;
+  --t-spring:400ms cubic-bezier(.34,1.56,.64,1);
+}
+
+/* === 2. RESET === */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+::selection{background:var(--blue-glow);color:#1e293b}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+body{font-family:'Inter','PingFang SC',system-ui,sans-serif;font-size:14px;color:#1e293b;background:#eef1f5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select,textarea{font-family:inherit}
+a{text-decoration:none;color:inherit}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:230px;background:#1c2333;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-header{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.logo-icon{width:32px;height:32px;background:#2563eb;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2}
+.logo-name{font-size:14px;font-weight:700;color:#f1f5f9;letter-spacing:-.2px}
+.logo-sub{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.04em}
+.license-bar{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:10px 11px}
+.lic-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.lic-lbl{font-size:11px;color:rgba(255,255,255,.4)}
+.lic-val{font-size:12px;font-weight:600;color:#f1f5f9;letter-spacing:.02em}
+.lic-val.free{color:#f59e0b}
+.lic-val.pro{color:#10b981}
+.lic-btn{width:100%;padding:7px;margin-top:8px;border-radius:6px;font-size:12px;font-weight:600;text-align:center;transition:all var(--t-spring);border:none;cursor:pointer;letter-spacing:.02em}
+.lic-btn.upgrade{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.lic-btn.upgrade:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.lic-btn.upgrade:active{transform:translateY(0);box-shadow:0 1px 4px rgba(37,99,235,.2)}
+.lic-pro-badge{display:flex;align-items:center;gap:4px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.25);border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;color:#10b981;margin-top:6px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:10px 8px}
+.sidebar-nav::-webkit-scrollbar{width:3px}
+.sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+.nav-section{margin-bottom:16px}
+.nav-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:.08em;text-transform:uppercase;padding:0 8px;margin-bottom:3px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;font-size:13px;font-weight:500;color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s cubic-bezier(.25,.46,.45,.94);margin-bottom:2px;position:relative}
+.nav-item::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%) scaleY(0);width:3px;height:60%;background:#2563eb;border-radius:0 2px 2px 0;transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
+.nav-item:hover{background:#263044;color:rgba(255,255,255,.85)}
+.nav-item:hover::before{transform:translateY(-50%) scaleY(0.5)}
+.nav-item.active{background:#2d3a52;color:#f1f5f9;font-weight:600}
+.nav-item.active::before{transform:translateY(-50%) scaleY(1)}
+.nav-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.75;opacity:.6;flex-shrink:0}
+.nav-item:hover svg,.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.45)}
+.nav-badge.warn{background:rgba(245,158,11,.2);color:#f59e0b}
+.sidebar-footer{padding:10px;border-top:1px solid rgba(255,255,255,.06)}
+.user-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;cursor:pointer;transition:background var(--t-fast)}
+.user-row:hover{background:rgba(255,255,255,.05)}
+.user-avatar{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#4f46e5;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.user-name{font-size:12px;font-weight:600;color:#e2e8f0;letter-spacing:.02em}
+.user-ver{font-size:10px;color:rgba(255,255,255,.28)}
+
+/* === ENHANCED: Lock banner === */
+.lock-banner{background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fde68a;border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);flex-shrink:0;position:relative;overflow:hidden}
+.lock-banner::before{content:'';position:absolute;top:0;right:0;width:80px;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,.08));pointer-events:none}
+.lock-icon{width:34px;height:34px;background:#f59e0b;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(245,158,11,.25)}
+.lock-icon svg{width:17px;height:17px;stroke:#fff}
+.lock-text{flex:1}
+.lock-title{font-size:13px;font-weight:600;color:#92400e}
+.lock-desc{font-size:12px;color:#b45309;margin-top:1px;line-height:1.5}
+.lock-btn{padding:7px 14px;background:#f59e0b;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all var(--t-spring);white-space:nowrap;box-shadow:0 2px 6px rgba(245,158,11,.25);border:none;flex-shrink:0}
+.lock-btn:hover{background:#d97706;transform:translateY(-1px);box-shadow:0 4px 10px rgba(245,158,11,.3)}
+.lock-btn:active{transform:translateY(0)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.main-header{height:52px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;z-index:10}
+.header-title{font-size:15px;font-weight:600;color:#1e293b;flex:1;letter-spacing:-.2px}
+.header-search{display:flex;align-items:center;gap:8px;background:#eef1f5;border:1px solid #e2e8f0;border-radius:10px;padding:0 12px;height:34px;width:260px;transition:all var(--t-spring);flex-shrink:0}
+.header-search:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow);width:320px;background:#fff}
+.header-search svg{width:14px;height:14px;stroke:#94a3b8;flex-shrink:0;transition:stroke var(--t-base)}
+.header-search:focus-within svg{stroke:var(--blue)}
+.header-search input{flex:1;border:none;background:none;font-size:13px;color:#1e293b;outline:none}
+.header-search input::placeholder{color:#94a3b8}
+.main-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;flex:1;overflow:hidden}
+.page.active{display:flex;flex-direction:column}
+
+/* STANDARD LIBRARY */
+.std-layout{display:flex;flex:1;overflow:hidden}
+.std-left{width:195px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;flex-shrink:0}
+.std-filter-group{padding:12px 12px 9px;border-bottom:1px solid #e2e8f0}
+.fl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.fc{display:flex;flex-wrap:wrap;gap:4px}
+.fc span{font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;transition:all .12s}
+.fc span:hover{border-color:#2563eb;color:#2563eb}
+.fc span.active{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600}
+.std-tree{flex:1;overflow-y:auto;padding:7px}
+.std-tree::-webkit-scrollbar{width:3px}
+.std-tree::-webkit-scrollbar-thumb{background:#e2e8f0}
+.std-tree-item{padding:7px 9px;border-radius:6px;cursor:pointer;transition:background .1s;border:1px solid transparent;margin-bottom:2px}
+.std-tree-item:hover{background:#eef1f5}
+.std-tree-item.active{background:#eff6ff;border-color:rgba(37,99,235,.2)}
+.std-tree-item-name{font-size:13px;font-weight:500;color:#1e293b}
+.std-tree-item.active .std-tree-item-name{color:#2563eb;font-weight:600}
+.std-tree-item-meta{font-size:11px;color:#94a3b8;margin-top:1px}
+.std-tree-badges{display:flex;gap:3px;margin-top:4px}
+.std-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;letter-spacing:.03em}
+.std-badge.gb{background:#fee2e2;color:#dc2626}
+.std-badge.iso{background:#eff6ff;color:#2563eb}
+.std-badge.din{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.std-right{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.std-right::-webkit-scrollbar{width:6px}
+.std-right::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:3px}
+.std-toolbar{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0}
+.std-toolbar-title{font-size:14px;font-weight:600;color:#1e293b;flex:1}
+.std-toolbar-count{font-size:12px;color:#94a3b8}
+.std-tabs{display:flex;background:#eef1f5;border-radius:6px;padding:3px;gap:2px}
+.std-tab{font-size:12px;font-weight:500;padding:4px 11px;border-radius:5px;color:#64748b;cursor:pointer;transition:all .12s}
+.std-tab:hover{color:#1e293b}
+.std-tab.active{background:#fff;color:#1e293b;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+/* LOCK BANNER */
+.lock-banner{background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fde68a;border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.lock-icon{width:34px;height:34px;background:#f59e0b;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lock-icon svg{width:17px;height:17px;stroke:#fff}
+.lock-text{flex:1}
+.lock-title{font-size:13px;font-weight:600;color:#92400e}
+.lock-desc{font-size:12px;color:#b45309;margin-top:1px}
+.lock-btn{padding:7px 14px;background:#f59e0b;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.lock-btn:hover{background:#d97706}
+
+/* === ENHANCED: Entrance animations & card depth === */
+.spec-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;padding:14px}
+.spec-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s cubic-bezier(.25,.46,.45,.94);box-shadow:0 1px 3px rgba(0,0,0,.06);opacity:0;transform:translateY(14px)}
+.spec-card.entered{opacity:1;transform:translateY(0)}
+.spec-card:hover{border-color:rgba(37,99,235,.35);box-shadow:0 6px 20px rgba(37,99,235,.12);transform:translateY(-3px)}
+.spec-card:active{transform:translateY(-1px);transition-duration:.08s}
+.spec-card-locked{position:relative;opacity:.65}
+.spec-visual{height:90px;background:linear-gradient(135deg,#f8fafc,#eef2f7);display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e2e8f0;position:relative;overflow:hidden}
+.spec-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,.03),transparent);opacity:0;transition:opacity .2s}
+.spec-card:hover .spec-visual::before{opacity:1}
+.lock-overlay{position:absolute;inset:0;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(1px)}
+.lock-overlay svg{width:22px;height:22px;stroke:#94a3b8}
+.spec-body{padding:11px 13px}
+.spec-title{font-size:15px;font-weight:700;color:#1e293b;margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.spec-codes{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.spec-params{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.sp{background:#f8fafc;border-radius:6px;padding:4px;text-align:center;transition:background .15s}
+.spec-card:hover .sp{background:#eff6ff}
+.sp-lbl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em}
+.sp-val{font-size:12px;font-weight:700;color:#1e293b;margin-top:1px;font-family:'JetBrains Mono',monospace}
+
+/* === ENHANCED: Calculator result animation === */
+.cr-val{font-size:36px;font-weight:700;color:#2563eb;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.cr-val.updating{transform:scale(1.08);color:#1d4ed8}
+
+/* === ENHANCED: Detail page visual hierarchy === */
+.dcard{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.dcard-hdr{padding:11px 15px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.dcard-title{font-size:13px;font-weight:700;color:#1e293b}
+.dcard-body{padding:14px 15px}
+.dr{display:flex;align-items:center;justify-content:space-between;margin-top:10px;background:linear-gradient(135deg,#eff6ff,#f0f9ff);border-radius:10px;padding:12px 15px;border:1px solid rgba(37,99,235,.15);transition:all .2s}
+.dr:hover{background:linear-gradient(135deg,#dbeafe,#eff6ff);border-color:rgba(37,99,235,.25)}
+.dr-lbl{font-size:12px;color:#2563eb}
+.dr-val{font-size:22px;font-weight:700;color:#2563eb;font-family:'JetBrains Mono',monospace}
+
+/* === ENHANCED: Breadcrumb === */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:#94a3b8;padding:10px 16px;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff}
+
+/* === ENHANCED: Favorite card hover === */
+.fav-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px;cursor:pointer;transition:all .2s cubic-bezier(.25,.46,.45,.94);display:flex;align-items:center;gap:11px;opacity:0;transform:translateY(10px)}
+.fav-card.entered{opacity:1;transform:translateY(0)}
+.fav-card:hover{border-color:rgba(37,99,235,.3);box-shadow:0 4px 14px rgba(37,99,235,.1);transform:translateX(3px)}
+
+/* === ENHANCED: Settings sub-nav === */
+.sni{padding:7px 11px;border-radius:6px;font-size:13px;font-weight:500;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s}
+.sni:hover{background:#f1f5f9;color:#1e293b}
+.sni.active{background:#eff6ff;color:#2563eb;font-weight:600}
+.sni svg{width:14px;height:14px;stroke:currentColor}
+
+/* === ENHANCED: Unlock dialog features === */
+.dialog-features{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px}
+.dfeat{display:flex;align-items:center;gap:7px;padding:7px 9px;background:#f8fafc;border-radius:7px;font-size:12px;color:#64748b}
+.dfeat svg{width:13px;height:13px;stroke:#10b981;flex-shrink:0}
+
+/* === NEW: Offline status indicator === */
+.offline-indicator{display:none;align-items:center;gap:6px;padding:5px 10px;background:#fef3c7;border:1px solid #fde68a;border-radius:var(--r-sm);font-size:11px;font-weight:600;color:#92400e;animation:pulseWarning 3s ease-in-out infinite}
+.offline-indicator.show{display:flex}
+@keyframes pulseWarning{0%,100%{opacity:1}50%{opacity:.8}}
+.offline-dot{width:6px;height:6px;background:#f59e0b;border-radius:50%;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+
+/* === NEW: Expert interpretation panel === */
+.interp-panel{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.interp-card{padding:12px 14px;border-radius:var(--r-lg);background:#f8fafc;border-left:3px solid #f59e0b;transition:all var(--t-base)}
+.interp-card.note{border-left-color:#f59e0b;background:#fffbeb}
+.interp-card.warn{border-left-color:#dc2626;background:#fef2f2}
+.interp-card.tip{border-left-color:#10b981;background:#f0fdf4}
+.interp-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.interp-card.note .interp-card-label{color:#b45309}
+.interp-card.warn .interp-card-label{color:#dc2626}
+.interp-card.tip .interp-card-label{color:#047857}
+.interp-card-text{font-size:13px;color:#475569;line-height:1.7}
+
+/* SPEC DETAIL */
+.detail-layout{display:flex;flex:1;overflow:hidden}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:#94a3b8;padding:10px 16px;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff}
+.bc-item{cursor:pointer}
+.bc-item:hover{color:#2563eb}
+.bc-sep{font-size:11px}
+.detail-main{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:11px}
+.detail-main::-webkit-scrollbar{width:6px}
+.detail-main::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:3px}
+.detail-aside{width:270px;background:#fff;border-left:1px solid #e2e8f0;overflow-y:auto;flex-shrink:0}
+.detail-aside::-webkit-scrollbar{width:3px}
+.detail-aside::-webkit-scrollbar-thumb{background:#e2e8f0}
+
+/* CARDS */
+.dcard{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.dcard-hdr{padding:11px 15px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.dcard-title{font-size:13px;font-weight:700;color:#1e293b}
+.dcard-body{padding:14px 15px}
+.dr{display:flex;align-items:center;justify-content:space-between;margin-top:10px;background:#eff6ff;border-radius:8px;padding:10px 13px}
+.dr-lbl{font-size:12px;color:#2563eb}
+.dr-val{font-size:22px;font-weight:700;color:#2563eb;font-family:'JetBrains Mono',monospace}
+
+/* PARAM TABLE */
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl tr{border-bottom:1px solid #e2e8f0}
+.ptbl tr:last-child{border-bottom:none}
+.ptbl td{padding:7px 0;font-size:13px}
+.ptbl td:first-child{color:#64748b;width:38%}
+.ptbl td:last-child{font-weight:600;color:#1e293b}
+
+/* COMPARE TABLE */
+.ctbl{width:100%;border-collapse:collapse;font-size:13px}
+.ctbl th{padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.ctbl td{padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#1e293b}
+.ctbl tr:last-child td{border-bottom:none}
+.ctbl tr:hover td{background:#fafbff}
+.gb-bg{background:#fff5f5 !important}
+.iso-bg{background:#eff6ff !important}
+.din-bg{background:#f8fafc !important}
+.std-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;display:inline-block;margin-top:2px}
+.std-tag.gb{background:#fee2e2;color:#dc2626}
+.std-tag.iso{background:#eff6ff;color:#2563eb}
+.std-tag.din{background:#f1f5f9;color:#64748b}
+
+/* CALCULATOR */
+.calc-layout{display:grid;grid-template-columns:350px 1fr;gap:14px;padding:14px;flex:1;overflow:hidden}
+.calc-panel{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.calc-panel-hdr{padding:13px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.calc-icon{width:28px;height:28px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.calc-icon svg{width:15px;height:15px;stroke:#2563eb}
+.calc-panel-title{font-size:14px;font-weight:700;color:#1e293b}
+.calc-panel-sub{font-size:11px;color:#94a3b8}
+.calc-body{flex:1;overflow-y:auto;padding:16px}
+.calc-body::-webkit-scrollbar{width:4px}
+.calc-body::-webkit-scrollbar-thumb{background:#e2e8f0}
+.fg{margin-bottom:14px}
+.fl{font-size:12px;font-weight:600;color:#1e293b;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.fl-hint{font-size:11px;color:#94a3b8;font-weight:400}
+.fi,.fs{width:100%;padding:8px 11px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;font-weight:500;color:#1e293b;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.fi:focus,.fs:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.calc-result-box{background:#f8fafc;border-radius:10px;padding:18px;text-align:center;margin-top:16px}
+.cr-lbl{font-size:12px;color:#64748b;margin-bottom:5px}
+.cr-val{font-size:36px;font-weight:700;color:#2563eb;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
+.cr-unit{font-size:13px;color:#64748b;margin-top:2px}
+.cr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.cri{background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px;text-align:center}
+.cri-lbl{font-size:10px;color:#94a3b8}
+.cri-val{font-size:13px;font-weight:700;color:#1e293b;margin-top:2px}
+.calc-table-panel{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.calc-table-hdr{padding:13px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.calc-table-hdr-title{font-size:14px;font-weight:700;color:#1e293b}
+.wtbl{width:100%;border-collapse:collapse;font-size:13px}
+.wtbl th{padding:9px 13px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.wtbl td{padding:8px 13px;border-bottom:1px solid #f1f5f9;color:#1e293b}
+.wtbl tr:last-child td{border-bottom:none}
+.wtbl tr:hover td{background:#fafbff}
+.hl{color:#2563eb;font-weight:700}
+
+/* FAVORITES */
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;padding:14px}
+.fav-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:11px}
+.fav-card:hover{border-color:rgba(37,99,235,.3);box-shadow:0 2px 8px rgba(37,99,235,.08)}
+.fav-icon{width:34px;height:34px;background:#eff6ff;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fav-icon svg{width:17px;height:17px;stroke:#2563eb}
+.fav-name{font-size:13px;font-weight:600;color:#1e293b}
+.fav-meta{font-size:11px;color:#94a3b8;margin-top:2px}
+.fav-del{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;transition:all .12s;margin-left:auto;flex-shrink:0}
+.fav-del:hover{background:#fef2f2;color:#ef4444}
+.fav-del svg{width:11px;height:11px}
+
+/* SETTINGS */
+.settings-layout{display:flex;flex:1;overflow:hidden}
+.settings-nav{width:190px;background:#fff;border-right:1px solid #e2e8f0;padding:10px 7px;flex-shrink:0}
+.sni{padding:7px 11px;border-radius:6px;font-size:13px;font-weight:500;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .1s}
+.sni:hover{background:#eef1f5;color:#1e293b}
+.sni.active{background:#eff6ff;color:#2563eb;font-weight:600}
+.sni svg{width:14px;height:14px;stroke:currentColor}
+.settings-content{flex:1;overflow-y:auto;padding:18px}
+.settings-content::-webkit-scrollbar{width:4px}
+.settings-content::-webkit-scrollbar-thumb{background:#e2e8f0}
+.scard{background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:13px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.scard-hdr{padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.scard-title{font-size:14px;font-weight:700;color:#1e293b}
+.scard-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
+.badge-free{background:#f59e0b;color:#fff}
+.badge-pro{background:#10b981;color:#fff}
+.scard-body{padding:16px}
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:14px}
+.sitem{background:#f8fafc;border-radius:8px;padding:11px}
+.sitem-lbl{font-size:11px;color:#94a3b8;margin-bottom:3px}
+.sitem-val{font-size:14px;font-weight:700;color:#1e293b}
+.srow{padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+.srow:last-child{border-bottom:none}
+
+/* DIALOG */
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px);animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dialog{background:#fff;border-radius:14px;width:430px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:slideUp .25s}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.dialog-hdr{padding:22px 22px 0;display:flex;align-items:center;gap:13px}
+.dialog-icon{width:42px;height:42px;background:linear-gradient(135deg,#2563eb,#0ea5e9);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dialog-icon svg{width:21px;height:21px;stroke:#fff}
+.dialog-title{font-size:17px;font-weight:700;color:#1e293b}
+.dialog-sub{font-size:13px;color:#64748b;margin-top:2px}
+.dialog-body{padding:18px 22px}
+.dialog-features{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px}
+.dfeat{display:flex;align-items:center;gap:7px;padding:7px 9px;background:#f8fafc;border-radius:7px;font-size:12px;color:#64748b}
+.dfeat svg{width:13px;height:13px;stroke:#10b981;flex-shrink:0}
+.dialog-msg{padding:8px 13px;border-radius:7px;font-size:12px;margin-bottom:10px;display:none}
+.dialog-msg.err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;display:block}
+.dialog-msg.ok{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;display:block}
+.dialog-fgl{margin-bottom:11px}
+.dialog-fl{font-size:12px;font-weight:600;color:#1e293b;margin-bottom:5px}
+.dialog-fi{width:100%;padding:9px 13px;border:1px solid #cbd5e1;border-radius:7px;font-size:15px;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;color:#1e293b;outline:none;transition:border-color .15s,box-shadow .15s}
+.dialog-fi:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.dialog-hint{font-size:11px;color:#94a3b8;margin-top:4px}
+.dialog-foot{padding:0 22px 22px;display:flex;gap:8px}
+.dbtn{flex:1;padding:9px 15px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.dbtn-cancel{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.dbtn-cancel:hover{background:#e2e8f0}
+.dbtn-primary{background:#2563eb;color:#fff}
+.dbtn-primary:hover{background:#1d4ed8}
+.dbtn-success{background:#10b981;color:#fff}
+.dbtn-success:hover{background:#059669}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:#1e293b;color:#fff;padding:9px 17px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:2000;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.suc{background:#10b981}
+.toast.err{background:#ef4444}
+.toast.warn{background:#f59e0b}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 13px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none}
+.btn svg{width:14px;height:14px}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.btn-secondary:hover{background:#e2e8f0}
+.btn-ghost{background:transparent;color:#64748b}
+.btn-ghost:hover{background:#f1f5f9}
+.btn-sm{padding:5px 10px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg></div>
+      <div>
+        <div class="logo-name">螺定 SUREDIM</div>
+        <div class="logo-sub">离线标准查询工具</div>
+      </div>
+    </div>
+    <div class="license-bar">
+      <div class="lic-row">
+        <span class="lic-lbl">当前版本</span>
+        <span class="lic-val free" id="licType">免费试用版</span>
+      </div>
+      <div class="lic-row">
+        <span class="lic-lbl">可用记录</span>
+        <span class="lic-val" id="licCount">67 / 100 条</span>
+      </div>
+      <button class="lic-btn upgrade" onclick="openUnlock()">解锁完整数据</button>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-label">数据查询</div>
+      <div class="nav-item active" onclick="showPage('standards')">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        标准件库 <span class="nav-badge warn">限</span>
+      </div>
+      <div class="nav-item" onclick="showPage('calculator')">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="10" y1="4" x2="10" y2="20"/></svg>
+        千支重计算
+      </div>
+      <div class="nav-item" onclick="showPage('compare')">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        标准对比
+      </div>
+      <div class="nav-item" onclick="showPage('favorites')">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        我的收藏
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">工具</div>
+      <div class="nav-item" onclick="showPage('settings')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        设置与关于
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">张</div>
+      <div>
+        <div class="user-name">张工程师</div>
+        <div class="user-ver">v1.0.0</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="main-header">
+    <div class="header-title" id="headerTitle">标准件库</div>
+    <div class="header-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="搜索螺纹规格、标准号…" id="globalSearch" oninput="onGlobalSearch(this.value)">
+    </div>
+  </header>
+
+  <!-- Offline status indicator -->
+  <div class="offline-indicator" id="offlineIndicator">
+    <span class="offline-dot"></span>
+    <span id="offlineMsg">网络连接已断开，请检查网络</span>
+  </div>
+
+  <!-- PAGE: STANDARDS -->
+  <div class="page active" id="page-standards">
+    <div class="std-layout">
+      <div class="std-left">
+        <div class="std-filter-group">
+          <div class="fl">标准体系</div>
+          <div class="fc">
+            <span class="active" onclick="filterStd(this,'all')">全部</span>
+            <span onclick="filterStd(this,'GB')">GB/T</span>
+            <span onclick="filterStd(this,'ISO')">ISO</span>
+            <span onclick="filterStd(this,'DIN')">DIN</span>
+          </div>
+        </div>
+        <div class="std-filter-group">
+          <div class="fl">产品类型</div>
+          <div class="fc">
+            <span class="active" onclick="filterCat(this,'all')">全部</span>
+            <span onclick="filterCat(this,'bolt')">螺栓</span>
+            <span onclick="filterCat(this,'screw')">螺钉</span>
+            <span onclick="filterCat(this,'nut')">螺母</span>
+          </div>
+        </div>
+        <div class="std-tree" id="stdTree">
+          <div class="std-tree-item active" onclick="selectGroup(this,'hex-bolt')">
+            <div class="std-tree-item-name">六角头螺栓</div>
+            <div class="std-tree-item-meta">GB/T 5782 · ISO 4014</div>
+            <div class="std-tree-badges"><span class="std-badge gb">GB</span><span class="std-badge iso">ISO</span></div>
+          </div>
+          <div class="std-tree-item" onclick="selectGroup(this,'hex-nut')">
+            <div class="std-tree-item-name">六角螺母</div>
+            <div class="std-tree-item-meta">GB/T 6170 · ISO 4032</div>
+            <div class="std-tree-badges"><span class="std-badge gb">GB</span><span class="std-badge iso">ISO</span><span class="std-badge din">DIN</span></div>
+          </div>
+          <div class="std-tree-item" onclick="selectGroup(this,'socket')">
+            <div class="std-tree-item-name">内六角圆柱头螺钉</div>
+            <div class="std-tree-item-meta">GB/T 70.1 · ISO 4762</div>
+            <div class="std-tree-badges"><span class="std-badge gb">GB</span><span class="std-badge iso">ISO</span></div>
+          </div>
+          <div class="std-tree-item" onclick="selectGroup(this,'flat-washer')">
+            <div class="std-tree-item-name">平垫圈</div>
+            <div class="std-tree-item-meta">GB/T 97.1 · ISO 7089</div>
+            <div class="std-tree-badges"><span class="std-badge gb">GB</span></div>
+          </div>
+          <div class="std-tree-item" onclick="selectGroup(this,'spring')">
+            <div class="std-tree-item-name">弹簧垫圈</div>
+            <div class="std-tree-item-meta">GB/T 93 · GB/T 859</div>
+            <div class="std-tree-badges"><span class="std-badge gb">GB</span></div>
+          </div>
+          <div class="std-tree-item" onclick="selectGroup(this,'stud')">
+            <div class="std-tree-item-name">双头螺柱</div>
+            <div class="std-tree-item-meta">GB/T 901 · ISO 13918</div>
+            <div class="std-tree-badges"><span class="std-badge gb">GB</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="std-right">
+        <div class="std-toolbar">
+          <div class="std-toolbar-title" id="stdGroupName">六角头螺栓</div>
+          <div class="std-tabs">
+            <div class="std-tab active">规格参数</div>
+            <div class="std-tab">图纸预览</div>
+            <div class="std-tab">标准解读</div>
+          </div>
+          <div class="std-toolbar-count" id="stdCountLabel">共 67 条</div>
+        </div>
+        <div class="lock-banner" id="lockBanner">
+          <div class="lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+          <div class="lock-text">
+            <div class="lock-title">免费版已查看 67/100 条标准</div>
+            <div class="lock-desc">解锁后可查看 GB/T、ISO、DIN 全部标准数据，支持多标准对比</div>
+          </div>
+          <button class="lock-btn" onclick="openUnlock()">立即解锁</button>
+        </div>
+        <div class="spec-cards" id="specCards"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: SPEC DETAIL -->
+  <div class="page" id="page-detail">
+    <div class="breadcrumb">
+      <span class="bc-item" onclick="showPage('standards')">标准件库</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-item" onclick="showPage('standards')" id="detail-parent">六角头螺栓</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-item" id="detail-name">M10×30</span>
+    </div>
+    <div class="detail-layout">
+      <div class="detail-main" id="detailMain"></div>
+      <div class="detail-aside">
+        <div class="dcard" style="border-radius:0;border-left:none;border-right:none;">
+          <div class="dcard-hdr"><div class="dcard-title">专家解读</div></div>
+          <div class="dcard-body interp-panel" id="detailInterp"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: CALCULATOR -->
+  <div class="page" id="page-calculator">
+    <div class="calc-layout">
+      <div class="calc-panel">
+        <div class="calc-panel-hdr">
+          <div class="calc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="10" y1="4" x2="10" y2="20"/></svg></div>
+          <div><div class="calc-panel-title">千支重计算器</div><div class="calc-panel-sub">输入螺纹规格与长度，自动计算</div></div>
+        </div>
+        <div class="calc-body">
+          <div class="fg">
+            <label class="fl">螺纹规格 <span class="fl-hint">（公称直径）</span></label>
+            <select class="fs" id="calcThread" onchange="calcWeight()">
+              <option value="6">M6</option><option value="8">M8</option><option value="10" selected>M10</option>
+              <option value="12">M12</option><option value="14">M14</option><option value="16">M16</option>
+              <option value="20">M20</option><option value="24">M24</option><option value="30">M30</option><option value="36">M36</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">公称长度 L <span class="fl-hint">（mm）</span></label>
+            <select class="fs" id="calcLength" onchange="calcWeight()">
+              <option value="20">20 mm</option><option value="25">25 mm</option><option value="30" selected>30 mm</option>
+              <option value="35">35 mm</option><option value="40">40 mm</option><option value="45">45 mm</option>
+              <option value="50">50 mm</option><option value="55">55 mm</option><option value="60">60 mm</option>
+              <option value="70">70 mm</option><option value="80">80 mm</option><option value="90">90 mm</option>
+              <option value="100">100 mm</option><option value="110">110 mm</option><option value="120">120 mm</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">性能等级</label>
+            <select class="fs" id="calcGrade" onchange="calcWeight()">
+              <option value="4.8">4.8 级（普通碳钢）</option><option value="6.8">6.8 级（普通碳钢）</option>
+              <option value="8.8" selected>8.8 级（合金钢/碳钢）</option><option value="10.9">10.9 级（合金钢）</option>
+              <option value="12.9">12.9 级（合金钢）</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">表面处理</label>
+            <select class="fs" id="calcSurface" onchange="calcWeight()">
+              <option value="1">本色（无处理）</option><option value="1.06" selected>镀锌（+6%）</option>
+              <option value="1.02">发黑（+2%）</option><option value="1.04">磷化（+4%）</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">数量</label>
+            <select class="fs" id="calcQty">
+              <option value="1">1 件</option><option value="100">100 件</option>
+              <option value="1000" selected>1,000 件</option><option value="5000">5,000 件</option>
+              <option value="10000">10,000 件</option>
+            </select>
+          </div>
+          <div class="calc-result-box">
+            <div class="cr-lbl">参考千支重</div>
+            <div class="cr-val" id="crMain">≈ 6.25</div>
+            <div class="cr-unit">kg / 千支</div>
+            <div class="cr-grid">
+              <div class="cri"><div class="cri-lbl">单件重量</div><div class="cri-val" id="crSingle">6.25 g</div></div>
+              <div class="cri"><div class="cri-lbl">总重量</div><div class="cri-val" id="crTotal">6,250 g</div></div>
+              <div class="cri"><div class="cri-lbl">参考单价</div><div class="cri-val" id="crPrice">¥0.85</div></div>
+              <div class="cri"><div class="cri-lbl">参考总价</div><div class="cri-val" id="crTotalPrice">¥850</div></div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:9px;" onclick="copyResult()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              复制结果
+            </button>
+          </div>
+          <div style="margin-top:14px;padding:11px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px">计算公式</div>
+            <div style="font-size:13px;color:#1e293b;line-height:1.6">
+              <code style="background:#eef2f7;padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace">m = ρ × V</code><br>
+              <span style="font-size:11px;color:#94a3b8;margin-top:4px;display:block">ρ = 7.85 g/cm³（碳钢密度），V 由螺纹规格参数计算</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="calc-table-panel">
+        <div class="calc-table-hdr">
+          <div class="calc-table-hdr-title">千支重速查表</div>
+          <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:#f1f5f9;color:#64748b">单位：kg/千支</span>
+        </div>
+        <div style="overflow-y:auto;flex:1" id="wtblWrap"><table class="wtbl" id="wtbl"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: COMPARE -->
+  <div class="page" id="page-compare">
+    <div style="padding:14px;flex:1;overflow-y:auto">
+      <div class="dcard" style="margin-bottom:14px">
+        <div class="dcard-hdr"><div class="dcard-title">选择对比规格</div></div>
+        <div class="dcard-body">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select class="fs" style="width:auto;min-width:170px" id="cmp1">
+              <option value="GB">GB/T 5782</option><option value="ISO">ISO 4014</option><option value="DIN">DIN 931</option>
+            </select>
+            <span style="color:#94a3b8;font-size:13px">对比</span>
+            <select class="fs" style="width:auto;min-width:170px" id="cmp2">
+              <option value="ISO">ISO 4014</option><option value="GB">GB/T 5782</option><option value="DIN">DIN 931</option>
+            </select>
+            <span style="color:#94a3b8;font-size:13px">和</span>
+            <select class="fs" style="width:auto;min-width:170px" id="cmp3">
+              <option value="DIN">DIN 931</option><option value="GB">GB/T 5782</option><option value="ISO">ISO 4014</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="runCompare()">开始对比</button>
+          </div>
+        </div>
+      </div>
+      <div class="dcard">
+        <div class="dcard-hdr"><div class="dcard-title">GB/T 5782 · ISO 4014 · DIN 931 参数对照 — M10</div></div>
+        <div style="overflow-x:auto"><table class="ctbl" id="cmpTbl"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: FAVORITES -->
+  <div class="page" id="page-favorites">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid #e2e8f0;background:#fff;flex-shrink:0">
+      <div style="font-size:15px;font-weight:700;color:#1e293b">我的收藏</div>
+      <span style="font-size:12px;color:#94a3b8" id="favCnt">5 个收藏</span>
+    </div>
+    <div class="fav-grid" id="favGrid"></div>
+  </div>
+
+  <!-- PAGE: SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="settings-layout">
+      <div class="settings-nav">
+        <div class="sni active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>许可证</div>
+        <div class="sni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06"/></svg>通用设置</div>
+        <div class="sni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>关于</div>
+      </div>
+      <div class="settings-content">
+        <div class="scard">
+          <div class="scard-hdr">
+            <div class="scard-title">许可证状态</div>
+            <span class="scard-badge badge-free" id="sBadge">免费试用</span>
+          </div>
+          <div class="scard-body">
+            <div class="sgrid">
+              <div class="sitem"><div class="sitem-lbl">当前版本</div><div class="sitem-val">螺定 SUREDIM v1.0.0</div></div>
+              <div class="sitem"><div class="sitem-lbl">可用记录</div><div class="sitem-val" style="color:#f59e0b" id="sCount">67 / 100 条</div></div>
+              <div class="sitem"><div class="sitem-lbl">许可证密钥</div><div class="sitem-val" id="sKey">— 未激活 —</div></div>
+              <div class="sitem"><div class="sitem-lbl">到期时间</div><div class="sitem-val" id="sExpire">—</div></div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;padding:10px" onclick="openUnlock()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              输入解锁密钥
+            </button>
+          </div>
+        </div>
+        <div class="scard">
+          <div class="scard-hdr"><div class="scard-title">套餐说明</div></div>
+          <div class="scard-body" style="padding:0">
+            <div class="srow"><div><div style="font-size:14px;font-weight:600">免费版</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">100 条标准数据</div></div><span style="font-size:14px;font-weight:700;color:#1e293b">免费</span></div>
+            <div class="srow"><div><div style="font-size:14px;font-weight:600">专业版</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">全部 GB/ISO/DIN 标准，无限制</div></div><span style="font-size:14px;font-weight:700;color:#2563eb">¥299/年</span></div>
+            <div class="srow"><div><div style="font-size:14px;font-weight:600">企业版</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">多端使用 + 数据导出 + 优先更新</div></div><span style="font-size:14px;font-weight:700;color:#2563eb">¥999/年</span></div>
+          </div>
+        </div>
+        <div class="scard">
+          <div class="scard-hdr"><div class="scard-title">关于</div></div>
+          <div class="scard-body" style="font-size:13px;color:#64748b;line-height:1.8">
+            <p><strong style="color:#1e293b">螺定 SUREDIM</strong> 是一款面向紧固件工程师的离线标准查询工具，支持 GB/T、ISO、DIN 等多标准体系，提供螺纹参数查询、千支重计算、标准对比等工程实用功能。</p>
+            <p style="margin-top:10px">版本：v1.0.0 | 构建：2026-04-09 | Electron + Vue 3</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- UNLOCK DIALOG -->
+<div class="dialog-overlay" id="unlockDlg" style="display:none">
+  <div class="dialog">
+    <div class="dialog-hdr">
+      <div class="dialog-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+      <div><div class="dialog-title">解锁完整数据</div><div class="dialog-sub">输入许可证密钥，解锁全部标准数据</div></div>
+    </div>
+    <div class="dialog-body">
+      <div class="dialog-features">
+        <div class="dfeat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>全部 GB/T 标准</div>
+        <div class="dfeat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>全部 ISO 标准</div>
+        <div class="dfeat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>全部 DIN 标准</div>
+        <div class="dfeat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>标准对比工具</div>
+      </div>
+      <div class="dialog-msg" id="dlgMsg"></div>
+      <div class="dialog-fgl">
+        <label class="dialog-fl">许可证密钥</label>
+        <input type="text" class="dialog-fi" id="keyInput" placeholder="SDIM-PRO-XXXX-XXXX" maxlength="22">
+        <div class="dialog-hint">示例：SDIM-PRO-2026-0420</div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:11px">
+        <div style="font-size:12px;color:#64748b;line-height:1.6">
+          <strong>提示：</strong>密钥不联网验证，直接存储于本地配置文件。请妥善保存密钥。
+        </div>
+      </div>
+    </div>
+    <div class="dialog-foot">
+      <button class="dbtn dbtn-cancel" onclick="closeUnlock()">取消</button>
+      <button class="dbtn dbtn-primary" onclick="activateKey()">激活许可证</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// DATA
+const ALL_SPECS = [
+  {id:'M10-30',name:'M10×30',d:10,k:6.4,s:16,l:30,weight:6.25,codes:['GB/T 5782','ISO 4014'],free:true},
+  {id:'M10-35',name:'M10×35',d:10,k:6.4,s:16,l:35,weight:6.82,codes:['GB/T 5782'],free:true},
+  {id:'M10-40',name:'M10×40',d:10,k:6.4,s:16,l:40,weight:7.41,codes:['GB/T 5782','ISO 4014'],free:true},
+  {id:'M10-45',name:'M10×45',d:10,k:6.4,s:16,l:45,weight:8.00,codes:['GB/T 5782'],free:true},
+  {id:'M10-50',name:'M10×50',d:10,k:6.4,s:16,l:50,weight:8.59,codes:['GB/T 5782'],free:true},
+  {id:'M12-30',name:'M12×30',d:12,k:7.5,s:18,l:30,weight:8.44,codes:['GB/T 5782','ISO 4014'],free:true},
+  {id:'M12-40',name:'M12×40',d:12,k:7.5,s:18,l:40,weight:10.2,codes:['GB/T 5782','ISO 4014'],free:true},
+  {id:'M12-50',name:'M12×50',d:12,k:7.5,s:18,l:50,weight:11.9,codes:['GB/T 5782'],free:true},
+  {id:'M12-60',name:'M12×60',d:12,k:7.5,s:18,l:60,weight:13.6,codes:['GB/T 5782'],free:false},
+  {id:'M16-40',name:'M16×40',d:16,k:10,s:24,l:40,weight:16.5,codes:['GB/T 5782','ISO 4014','DIN 931'],free:false},
+  {id:'M16-50',name:'M16×50',d:16,k:10,s:24,l:50,weight:18.9,codes:['GB/T 5782','DIN 931'],free:false},
+  {id:'M16-60',name:'M16×60',d:16,k:10,s:24,l:60,weight:21.3,codes:['GB/T 5782'],free:false},
+  {id:'M16-80',name:'M16×80',d:16,k:10,s:24,l:80,weight:26.1,codes:['GB/T 5782'],free:false},
+  {id:'M20-50',name:'M20×50',d:20,k:12.5,s:30,l:50,weight:29.6,codes:['GB/T 5782','ISO 4014'],free:false},
+  {id:'M20-60',name:'M20×60',d:20,k:12.5,s:30,l:60,weight:33.3,codes:['GB/T 5782','DIN 931'],free:false},
+  {id:'M20-70',name:'M20×70',d:20,k:12.5,s:30,l:70,weight:37.0,codes:['GB/T 5782'],free:false},
+  {id:'M24-60',name:'M24×60',d:24,k:15,s:36,l:60,weight:46.3,codes:['GB/T 5782','ISO 4014'],free:false},
+  {id:'M24-80',name:'M24×80',d:24,k:15,s:36,l:80,weight:56.8,codes:['GB/T 5782','DIN 931'],free:false},
+  {id:'M24-100',name:'M24×100',d:24,k:15,s:36,l:100,weight:67.2,codes:['GB/T 5782'],free:false},
+  {id:'M30-70',name:'M30×70',d:30,k:18.7,s:46,l:70,weight:78.2,codes:['GB/T 5782','ISO 4014'],free:false},
+  {id:'M30-90',name:'M30×90',d:30,k:18.7,s:46,l:90,weight:93.8,codes:['GB/T 5782'],free:false},
+  {id:'M36-80',name:'M36×80',d:36,k:22.5,s:55,l:80,weight:118,codes:['GB/T 5782','ISO 4014'],free:false},
+  {id:'M36-100',name:'M36×100',d:36,k:22.5,s:55,l:100,weight:138,codes:['GB/T 5782','DIN 931'],free:false},
+];
+
+const WEIGHT_REF = {
+  6:  {c:0.162,p:0.22},8:{c:0.318,p:0.38},10:{c:0.625,p:0.85},
+  12:{c:1.055,p:1.20},14:{c:1.580,p:1.60},16:{c:2.270,p:2.30},
+  20:{c:4.100,p:4.10},24:{c:6.900,p:6.80},30:{c:11.80,p:11.50},36:{c:18.50,p:18.00}
+};
+
+const COMPARE_DATA = [
+  {l:'标准号',gb:'GB/T 5782-2016',iso:'ISO 4014:2017',din:'DIN 931-1'},
+  {l:'对边宽度 s',gb:'16 mm',iso:'16 mm',din:'16 mm'},
+  {l:'头部厚度 k',gb:'6.4 mm',iso:'6.4 mm',din:'6.5 mm'},
+  {l:'螺纹长度 b',gb:'26 mm',iso:'26 mm',din:'26 mm'},
+  {l:'螺柱直径 dₛ',gb:'9.78 mm',iso:'9.78 mm',din:'9.78 mm'},
+  {l:'抗拉强度 Rm',gb:'800 MPa',iso:'800 MPa',din:'800 MPa'},
+  {l:'保证载荷',gb:'29.1 kN',iso:'29.1 kN',din:'29.0 kN'},
+  {l:'硬度范围',gb:'HV 250-335',iso:'HV 250-335',din:'HV 250-335'},
+  {l:'适用螺纹',gb:'M1.6~64粗牙',iso:'M1.6~64粗牙',din:'M1.6~36粗牙'},
+];
+
+const DETAIL_PARAMS = {
+  'M10-30':[
+    {n:'标准号',v:'GB/T 5782-2016'},{n:'螺纹规格',v:'M10×30'},{n:'公称直径 d',v:'10 mm'},
+    {n:'公称长度 L',v:'30 mm'},{n:'对边宽度 s',v:'16 mm'},{n:'头部厚度 k',v:'6.4 mm'},
+    {n:'中径 d₂',v:'9.026 mm'},{n:'小径 d₃',v:'8.160 mm'},{n:'螺距 P',v:'1.5 mm'},
+    {n:'性能等级',v:'8.8 级'},{n:'抗拉强度 Rm',v:'800 MPa'},{n:'屈服强度 Rp0.2',v:'640 MPa'},
+    {n:'保证载荷',v:'29.1 kN'},{n:'适用标准',v:'GB/T 5782 / ISO 4014'},
+  ]
+};
+
+let favorites = [
+  {id:'M10-30',name:'M10×30',std:'GB/T 5782 · ISO 4014',type:'六角头螺栓'},
+  {id:'M12-40',name:'M12×40',std:'GB/T 5782 · ISO 4014',type:'六角头螺栓'},
+  {id:'M10-40',name:'M10×40',std:'GB/T 5782 · ISO 4014',type:'六角头螺栓'},
+  {id:'M16-50',name:'M16×50',std:'GB/T 5782 · DIN 931',type:'六角头螺栓'},
+  {id:'M20-60',name:'M20×60',std:'GB/T 5782 · DIN 931',type:'六角头螺栓'},
+];
+
+let state = {isPro:false,used:67,curSpec:null,filterStd:'all',filterCat:'all'};
+
+// NAV
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('[onclick*="showPage(\''+name+'\')"]').forEach(n=>{if(n.classList.contains('nav-item'))n.classList.add('active')});
+  const titles={standards:'标准件库',calculator:'千支重计算',compare:'标准对比',favorites:'我的收藏',settings:'设置与关于',detail:'规格详情'};
+  document.getElementById('headerTitle').textContent=titles[name]||name;
+  if(name==='calculator')renderWeightTable();
+  if(name==='favorites')renderFavorites();
+  if(name==='compare')renderCompareResult();
+}
+
+// STD LIBRARY
+function filterStd(el,type){
+  el.parentElement.querySelectorAll('span').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  state.filterStd=type;
+  renderCards();
+}
+function filterCat(el,type){
+  el.parentElement.querySelectorAll('span').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  state.filterCat=type;
+  renderCards();
+}
+function selectGroup(el,group){
+  document.querySelectorAll('.std-tree-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('stdGroupName').textContent=el.querySelector('.std-tree-item-name').textContent;
+  document.getElementById('stdCountLabel').textContent='共 '+ALL_SPECS.length+' 条';
+  renderCards();
+}
+function renderCards(){
+  let specs=ALL_SPECS;
+  if(state.filterStd!=='all')specs=specs.filter(s=>s.codes.some(c=>c.includes(state.filterStd)));
+  const container=document.getElementById('specCards');
+  container.innerHTML=specs.map((s,i)=>{
+    const locked=!state.isPro && !s.free;
+    return `<div class="spec-card ${locked?'spec-card-locked':''}" style="transition-delay:${(i%8)*35}ms" onclick="${locked?'toast(\'请解锁完整数据后查看\',\'warn\')':'openDetail(\''+s.id+'\')'}">
+      <div class="spec-visual">
+        <svg viewBox="0 0 75 60" fill="none" stroke="#9CA3AF" stroke-width="1.2">
+          <circle cx="37.5" cy="17" r="13" fill="#f8fafc" stroke="#c4c0b8"/>
+          <circle cx="37.5" cy="17" r="5" fill="#f8fafc" stroke="#c4c0b8"/>
+          <rect x="30" y="17" width="15" height="35" fill="#f8fafc" stroke="#c4c0b8"/>
+        </svg>
+        ${locked?'<div class="lock-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>':''}
+      </div>
+      <div class="spec-body">
+        <div class="spec-title">${s.name}</div>
+        <div class="spec-codes">${s.codes.map(c=>`<span class="std-badge ${c.includes('GB')?'gb':c.includes('ISO')?'iso':'din'}">${c.split(' ')[0]}</span>`).join('')}</div>
+        <div class="spec-params">
+          <div class="sp"><div class="sp-lbl">d</div><div class="sp-val">${s.d}</div></div>
+          <div class="sp"><div class="sp-lbl">k</div><div class="sp-val">${s.k}</div></div>
+          <div class="sp"><div class="sp-lbl">s</div><div class="sp-val">${s.s}</div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // Trigger staggered entrance animation
+  requestAnimationFrame(()=>{
+    container.querySelectorAll('.spec-card').forEach((card,i)=>{
+      setTimeout(()=>card.classList.add('entered'),i*35);
+    });
+  });
+}
+
+// SPEC DETAIL
+// Expert interpretation cards — populated per spec type
+function renderDetailInterp(sp){
+  const el=document.getElementById('detailInterp');
+  if(!el)return;
+  // Build interpretation data from spec properties
+  const cards=[];
+  const primaryCode=sp.codes[0]||'';
+  const isGB=primaryCode.includes('GB');
+  const isISO=primaryCode.includes('ISO');
+  const isDIN=primaryCode.includes('DIN');
+
+  // Card 1: 适用范围 (always note type)
+  cards.push({
+    type:'note',
+    label:'适用范围',
+    text:`${primaryCode} 规定了${sp.name}的尺寸、技术条件和验收要求，适用于规格 M1.6～M64、性能等级 4.6～12.9 的粗牙螺纹六角头螺栓。`
+  });
+
+  // Card 2: 选用建议 (warn type — common mistake)
+  const gradeAdvice=sp.grade==='12.9'
+    ? '12.9 级仅限合金钢使用，不可用中碳钢替代，否则热处理后脆断风险极高。'
+    : sp.grade==='10.9'
+    ? '10.9 级为合金钢或中碳钢经调质处理，推荐用于重要连接部位。'
+    : sp.grade==='8.8'
+    ? '8.8 级为最常用等级，兼顾强度与成本，室内普通连接首选。'
+    : '该等级强度较低，适用于非关键部位的普通紧固。';
+  cards.push({type:'warn',label:'选用建议',text:gradeAdvice});
+
+  // Card 3: 材料与表面处理 (tip type)
+  const surfaceTips=isGB
+    ? 'GB 标准默认材料为碳钢或合金钢；表面处理常用镀锌（防锈）或发黑（防锈+美观）。'
+    : isISO
+    ? 'ISO 标准接受多种材料；表面处理按 ISO 4042 电镀或 ISO 10683 有机涂层执行。'
+    : 'DIN 标准通常要求材料证书（MTC）；表面处理推荐镀锌或达克罗（耐蚀更优）。';
+  cards.push({type:'tip',label:'材料与表面',text:surfaceTips});
+
+  // Card 4: 公差配合 (note type, contextual)
+  const tolTip=sp.d>=12
+    ? `公称直径 ≥M12 时，螺纹中径公差需按 GB/T 197 的 6H/6g 配合选择，建议采购前确认装配公差要求。`
+    : `公称直径 ≤M10 时，螺纹精度敏感，建议优先选用 M10×30 或以上规格以降低加工难度。`;
+  cards.push({type:'note',label:'公差配合',text:tolTip});
+
+  const icons={note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',tip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 019 14"/></svg>'};
+  const labelText={note:'要点',warn:'警示',tip:'技巧'};
+
+  el.innerHTML=cards.map(c=>`
+    <div class="interp-card ${c.type}">
+      <div class="interp-card-label">${icons[c.type]}<span>${labelText[c.type]}</span>${c.label?' · '+c.label:''}</div>
+      <div class="interp-card-text">${c.text}</div>
+    </div>
+  `).join('');
+}
+function openDetail(id){
+  state.curSpec=ALL_SPECS.find(s=>s.id===id)||null;
+  document.getElementById('detail-name').textContent=id;
+  document.getElementById('detail-parent').textContent=document.getElementById('stdGroupName').textContent;
+  const sp=state.curSpec;
+  if(!sp)return;
+  const params=DETAIL_PARAMS[id]||[];
+  document.getElementById('detailMain').innerHTML=`
+    <div class="dcard">
+      <div class="dcard-hdr">
+        <div class="dcard-title">${sp.name} — ${sp.codes[0]}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="toggleFav('${sp.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="favIcon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            收藏
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openCalcWithSpec('${sp.id}')">千支重计算</button>
+        </div>
+      </div>
+      <div class="dcard-body">
+        <div style="background:linear-gradient(135deg,#f8fafc,#eef2f7);border-radius:10px;display:flex;align-items:center;justify-content:center;height:120px;margin-bottom:14px;position:relative;overflow:hidden">
+          <svg viewBox="0 0 120 96" fill="none" stroke="#9CA3AF" stroke-width="1.5" style="transition:transform .3s">
+            <!-- Annotation grid lines -->
+            <line x1="0" y1="48" x2="120" y2="48" stroke="#e2e8f0" stroke-width=".5" stroke-dasharray="3,3"/>
+            <line x1="60" y1="0" x2="60" y2="96" stroke="#e2e8f0" stroke-width=".5" stroke-dasharray="3,3"/>
+            <!-- Bolt head (hexagon) -->
+            <path d="M60 8 L72 15 L72 33 L60 40 L48 33 L48 15 Z" fill="#f8fafc" stroke="#c4c0b8" stroke-width="1.5"/>
+            <circle cx="60" cy="24" r="9" fill="#f8fafc" stroke="#c4c0b8" stroke-width="1.2"/>
+            <!-- Shaft -->
+            <rect x="54" y="40" width="12" height="52" fill="#f8fafc" stroke="#c4c0b8" stroke-width="1.5"/>
+            <!-- Thread lines on shaft -->
+            <line x1="54" y1="50" x2="66" y2="50" stroke="#c4c0b8" stroke-width=".8"/>
+            <line x1="54" y1="55" x2="66" y2="55" stroke="#c4c0b8" stroke-width=".8"/>
+            <line x1="54" y1="60" x2="66" y2="60" stroke="#c4c0b8" stroke-width=".8"/>
+            <line x1="54" y1="65" x2="66" y2="65" stroke="#c4c0b8" stroke-width=".8"/>
+            <line x1="54" y1="70" x2="66" y2="70" stroke="#c4c0b8" stroke-width=".8"/>
+            <line x1="54" y1="75" x2="66" y2="75" stroke="#c4c0b8" stroke-width=".8"/>
+            <line x1="54" y1="80" x2="66" y2="80" stroke="#c4c0b8" stroke-width=".8"/>
+            <!-- Dimension annotations -->
+            <line x1="78" y1="8" x2="90" y2="8" stroke="#2563eb" stroke-width=".8"/>
+            <line x1="78" y1="40" x2="90" y2="40" stroke="#2563eb" stroke-width=".8"/>
+            <line x1="87" y1="8" x2="87" y2="40" stroke="#2563eb" stroke-width=".8"/>
+            <line x1="54" y1="92" x2="66" y2="92" stroke="#2563eb" stroke-width=".8"/>
+          </svg>
+          <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);text-align:right">
+            <div style="font-size:10px;color:#2563eb;font-weight:600;font-family:'JetBrains Mono',monospace">d</div>
+            <div style="font-size:9px;color:#94a3b8;margin-top:22px;font-family:'JetBrains Mono',monospace">L</div>
+          </div>
+        </div>
+        <div class="spec-codes" style="margin-bottom:14px">${sp.codes.map(c=>`<span class="std-badge ${c.includes('GB')?'gb':c.includes('ISO')?'iso':'din'}">${c}</span>`).join('')}</div>
+        <table class="ptbl">${params.map(p=>`<tr><td>${p.n}</td><td>${p.v}</td></tr>`).join('')}</table>
+        <div class="dr">
+          <div><div class="dr-lbl">参考千支重（8.8级）</div><div style="font-size:11px;color:#7c3aed;margin-top:2px">由 ${sp.codes[0]} 公式计算 · 材料：碳钢</div></div>
+          <div class="dr-val">≈ ${sp.weight} kg</div>
+        </div>
+      </div>
+    </div>
+    <div class="dcard">
+      <div class="dcard-hdr"><div class="dcard-title">多标准参数对照</div></div>
+      <div style="overflow-x:auto"><table class="ctbl">
+        <thead><tr><th>参数</th><th class="gb-bg">GB/T 5782</th><th class="iso-bg">ISO 4014</th><th class="din-bg">DIN 931</th></tr></thead>
+        <tbody>${COMPARE_DATA.map(r=>`<tr><td>${r.l}</td><td class="gb-bg">${r.gb}</td><td class="iso-bg">${r.iso}</td><td class="din-bg">${r.din}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  showPage('detail');
+  renderDetailInterp(sp);
+}
+
+// CALCULATOR
+function calcWeight(){
+  const d=parseInt(document.getElementById('calcThread').value);
+  const l=parseInt(document.getElementById('calcLength').value);
+  const surf=parseFloat(document.getElementById('calcSurface').value);
+  const ref=WEIGHT_REF[d]||{c:1,p:1};
+  const lenFactor=l/30;
+  const baseWeight=(ref.c*lenFactor*surf).toFixed(3);
+  const qty=parseInt(document.getElementById('calcQty').value);
+  const single=(parseFloat(baseWeight)*1000/qty).toFixed(2);
+  const total=(parseFloat(baseWeight)*1000).toFixed(0);
+  // Animate the main result number
+  const crMain=document.getElementById('crMain');
+  crMain.classList.add('updating');
+  setTimeout(()=>{
+    crMain.textContent='≈ '+baseWeight;
+    crMain.classList.remove('updating');
+  },80);
+  document.getElementById('crSingle').textContent=total+' g';
+  document.getElementById('crTotal').textContent=(parseFloat(baseWeight)*qty/1000).toFixed(2)+' kg';
+  document.getElementById('crPrice').textContent='¥'+ref.p;
+  document.getElementById('crTotalPrice').textContent='¥'+(ref.p*qty/1000).toFixed(2);
+}
+function openCalcWithSpec(id){
+  const sp=ALL_SPECS.find(s=>s.id===id);
+  if(sp){
+    document.getElementById('calcThread').value=sp.d;
+    document.getElementById('calcLength').value=sp.l;
+    calcWeight();
+  }
+  showPage('calculator');
+}
+function copyResult(){
+  const txt=`螺纹规格：${document.getElementById('calcThread').value}\n长度：${document.getElementById('calcLength').value}mm\n千支重：${document.getElementById('crMain').textContent} kg\n参考单价：${document.getElementById('crPrice').textContent}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('已复制到剪贴板','suc'));
+}
+function renderWeightTable(){
+  const d=parseInt(document.getElementById('calcThread').value);
+  const lengths=[20,25,30,35,40,45,50,60,70,80,90,100,110,120];
+  const surf=parseFloat(document.getElementById('calcSurface').value);
+  const ref=WEIGHT_REF[d]||{c:1,p:1};
+  document.getElementById('wtbl').innerHTML=`
+    <thead><tr><th>规格</th><th>螺纹规格</th><th>长度 mm</th><th>千支重 kg</th></tr></thead>
+    <tbody>${lengths.map(l=>{const w=(ref.c*(l/30)*surf).toFixed(3);return`<tr><td>M${d}×${l}</td><td>M${d}</td><td>${l}</td><td class="${l===30?'hl':''}">≈ ${w}</td></tr>`}).join('')}</tbody>`;
+}
+
+// COMPARE
+function runCompare(){
+  renderCompareResult();
+}
+function renderCompareResult(){
+  const vals1=document.getElementById('cmp1').value;
+  const vals2=document.getElementById('cmp2').value;
+  const vals3=document.getElementById('cmp3').value;
+  const cols={GB:{bg:'gb-bg',tag:'gb'},ISO:{bg:'iso-bg',tag:'iso'},DIN:{bg:'din-bg',tag:'din'}};
+  document.getElementById('cmpTbl').innerHTML=`
+    <thead><tr><th>参数</th><th class="${cols[vals1].bg}">${vals1}</th><th class="${cols[vals2].bg}">${vals2}</th><th class="${cols[vals3].bg}">${vals3}</th></tr></thead>
+    <tbody>${COMPARE_DATA.map(r=>`<tr><td>${r.l}</td><td class="${cols[vals1].bg}">${r[vals1.toLowerCase()]}</td><td class="${cols[vals2].bg}">${r[vals2.toLowerCase()]}</td><td class="${cols[vals3].bg}">${r[vals3.toLowerCase()]}</td></tr>`).join('')}</tbody>`;
+}
+
+// FAVORITES
+function renderFavorites(){
+  document.getElementById('favCnt').textContent=favorites.length+' 个收藏';
+  const grid=document.getElementById('favGrid');
+  grid.innerHTML=favorites.length?favorites.map((f,i)=>`
+    <div class="fav-card" style="transition-delay:${i*50}ms" onclick="openDetail('${f.id}')">
+      <div class="fav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div><div class="fav-name">${f.name}</div><div class="fav-meta">${f.std}</div></div>
+      <div class="fav-del" onclick="event.stopPropagation();delFav('${f.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    </div>`).join(''):'<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;font-size:14px">暂无收藏，点击规格卡片上的收藏按钮添加</div>';
+  requestAnimationFrame(()=>{
+    grid.querySelectorAll('.fav-card').forEach((card,i)=>{
+      setTimeout(()=>card.classList.add('entered'),i*50);
+    });
+  });
+}
+function toggleFav(id){
+  const idx=favorites.findIndex(f=>f.id===id);
+  if(idx>=0){favorites.splice(idx,1);toast('已取消收藏');}
+  else{const sp=ALL_SPECS.find(s=>s.id===id);if(sp){favorites.push({id:sp.id,name:sp.name,std:sp.codes.join(' · '),type:'六角头螺栓'});toast('已添加到收藏','suc');}}
+  renderFavorites();
+}
+function delFav(id){favorites=favorites.filter(f=>f.id!==id);renderFavorites();}
+
+// LICENSE / UNLOCK
+function openUnlock(){
+  document.getElementById('unlockDlg').style.display='flex';
+  document.getElementById('dlgMsg').className='dialog-msg';
+  document.getElementById('dlgMsg').textContent='';
+  document.getElementById('keyInput').value='';
+}
+function closeUnlock(){document.getElementById('unlockDlg').style.display='none'}
+function activateKey(){
+  const key=document.getElementById('keyInput').value.trim().toUpperCase();
+  if(!key){document.getElementById('dlgMsg').className='dialog-msg err';document.getElementById('dlgMsg').textContent='请输入许可证密钥';return;}
+  // Demo keys
+  if(key.startsWith('SDIM-')){
+    state.isPro=true;
+    state.used=9999;
+    updateLicenseUI();
+    renderCards();
+    document.getElementById('dlgMsg').className='dialog-msg ok';
+    document.getElementById('dlgMsg').textContent='许可证激活成功！欢迎使用专业版';
+    document.querySelector('.dbtn-primary').className='dbtn dbtn-success';
+    document.querySelector('.dbtn-primary').textContent='已激活';
+    document.querySelector('.dbtn-primary').onclick=closeUnlock;
+    toast('许可证已激活，专业版已解锁！','suc');
+    document.getElementById('lockBanner').style.display='none';
+  }else{
+    document.getElementById('dlgMsg').className='dialog-msg err';
+    document.getElementById('dlgMsg').textContent='密钥无效，请检查后重新输入';
+  }
+}
+function updateLicenseUI(){
+  document.getElementById('licType').textContent=state.isPro?'专业版':'免费试用版';
+  document.getElementById('licType').className='lic-val '+(state.isPro?'pro':'free');
+  document.getElementById('licCount').textContent=state.isPro?'无限制':'67 / 100 条';
+  document.getElementById('sBadge').textContent=state.isPro?'专业版':'免费试用';
+  document.getElementById('sBadge').className='scard-badge '+(state.isPro?'badge-pro':'badge-free');
+  document.getElementById('sCount').textContent=state.isPro?'无限制':'67 / 100 条';
+  document.getElementById('sCount').style.color=state.isPro?'#10b981':'#f59e0b';
+  document.getElementById('sKey').textContent=state.isPro?'SDIM-PRO-****-****':'— 未激活 —';
+  document.getElementById('sExpire').textContent=state.isPro?'2027-04-09':'—';
+  const btn=document.querySelector('.lic-btn');
+  if(state.isPro){btn.textContent='许可证已激活';btn.className='lic-btn';btn.style.background='rgba(16,185,129,.2)';btn.style.color='#10b981';btn.onclick=null;}
+  document.getElementById('lockBanner').style.display=state.isPro?'none':'flex';
+}
+
+// TOAST
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// GLOBAL SEARCH
+function onGlobalSearch(q){
+  if(!q)return;
+  const found=ALL_SPECS.find(s=>s.id.includes(q)||s.name.includes(q)||s.codes.some(c=>c.includes(q)));
+  if(found)openDetail(found.id);
+}
+
+// INIT
+calcWeight();
+renderCards();
+renderFavorites();
+
+// Offline indicator — listen to network status
+function updateOnlineStatus(){
+  const indicator=document.getElementById('offlineIndicator');
+  const msg=document.getElementById('offlineMsg');
+  if(navigator.onLine){
+    indicator.classList.remove('show');
+  }else{
+    indicator.classList.add('show');
+    msg.textContent='网络连接已断开，请检查网络';
+  }
+}
+window.addEventListener('online',updateOnlineStatus);
+window.addEventListener('offline',updateOnlineStatus);
+// Init state
+updateOnlineStatus();
+</script>
+</body>
+</html>
